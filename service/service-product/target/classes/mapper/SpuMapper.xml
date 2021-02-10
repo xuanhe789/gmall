@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xuanhe.gmall.product.mapper.SpuMapper">
+    <resultMap id="SpuInfo" type="com.xuanhe.gmall.model.product.SpuInfo">
+        <id property="id" column="id"/>
+        <result property="category3Id" column="category3_id"/>
+        <result property="description" column="description"/>
+        <result property="spuName" column="spu_name"/>
+        <result property="tmId" column="tm_id"/>
+        <collection property="spuImageList" ofType="com.xuanhe.gmall.model.product.SpuImage">
+            <id property="id" column="img_id"/>
+            <result property="imgName" column="img_name"/>
+            <result property="imgUrl" column="img_url"/>
+            <result property="spuId" column="spu_id"/>
+        </collection>
+        <collection property="spuSaleAttrList" ofType="com.xuanhe.gmall.model.product.SpuSaleAttr">
+            <id property="id" column="attr_id"/>
+            <result property="spuId" column="spu_id"/>
+            <result property="baseSaleAttrId" column="base_sale_attr_id"/>
+            <result property="saleAttrName" column="sale_attr_name"/>
+        </collection>
+    </resultMap>
+    <resultMap id="spuImage" type="com.xuanhe.gmall.model.product.SpuImage">
+        <id property="id" column="img_id"/>
+        <result property="imgName" column="img_name"/>
+        <result property="imgUrl" column="img_url"/>
+        <result property="spuId" column="spu_id"/>
+    </resultMap>
+    <resultMap id="spuSaleAttr" type="com.xuanhe.gmall.model.product.SpuSaleAttr">
+        <id property="id" column="attr_id"/>
+        <result property="spuId" column="spu_id"/>
+        <result property="baseSaleAttrId" column="base_sale_attr_id"/>
+        <result property="saleAttrName" column="sale_attr_name"/>
+        <collection property="spuSaleAttrValueList" ofType="com.xuanhe.gmall.model.product.SpuSaleAttrValue">
+            <id property="id" column="value_id"/>
+            <result property="saleAttrName" column="value_sale_attr_name"/>
+            <result property="baseSaleAttrId" column="value_base_sale_attr_id"/>
+            <result property="spuId" column="value_spu_id"/>
+            <result property="saleAttrValueName" column="sale_attr_value_name"/>
+        </collection>
+    </resultMap>
+    <insert id="saveSpuInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into spu_info (category3_id,description,spu_name,tm_id)
+        values (#{category3Id},#{description},#{spuName},#{tmId})
+    </insert>
+    <insert id="savespuImageList">
+        insert  into spu_image (img_name,img_url,spu_id)
+        values 
+        <foreach collection="list" item="image" separator=",">
+            (#{image.imgName},#{image.imgUrl},#{image.spuId})
+        </foreach>
+    </insert>
+    <insert id="spuSaleAttrList">
+        insert  into spu_sale_attr (spu_id,base_sale_attr_id,sale_attr_name)
+        values
+        <foreach collection="list" item="attr" separator=",">
+            (#{attr.spuId},#{attr.baseSaleAttrId},#{attr.saleAttrName})
+        </foreach>
+    </insert>
+    <insert id="savespuSaleAttrValueList">
+        insert  into spu_sale_attr_value (spu_id,base_sale_attr_id,sale_attr_value_name,sale_attr_name)
+        values
+        <foreach collection="list" separator="," item="value">
+            (#{value.spuId},#{value.baseSaleAttrId},#{value.saleAttrValueName},#{value.saleAttrName})
+        </foreach>
+    </insert>
+    <select id="getSpuList" resultMap="SpuInfo">
+        select * from spu_info
+        where category3_id=#{id}
+        limit #{page},#{limit}
+    </select>
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from spu_info where category3_id=#{category3Id}
+    </select>
+    <select id="getBaseSaleAttrList" resultType="com.xuanhe.gmall.model.product.BaseSaleAttr">
+        select * from base_sale_attr
+    </select>
+    <select id="getSpuImageListBySpuId" resultMap="spuImage">
+        select * from spu_image where spu_id=#{spuId}
+    </select>
+    <select id="getspuSaleAttrListBySpuId" resultMap="spuSaleAttr">
+        select ssa.id attr_id , ssa.base_sale_attr_id base_sale_attr_id, ssa.spu_id spu_id ,ssa.sale_attr_name sale_attr_name,
+        ssav.id value_id ,ssav.spu_id value_spu_id ,ssav.base_sale_attr_id value_base_sale_attr_id ,ssav.sale_attr_name value_sale_attr_name
+        ,ssav.sale_attr_value_name sale_attr_value_name
+        from spu_sale_attr ssa,spu_sale_attr_value ssav
+        where ssa.spu_id=ssav.spu_id
+        and ssa.base_sale_attr_id=ssav.base_sale_attr_id
+--         and ssa.sale_attr_name=ssav.sale_attr_name 都可以
+        and ssa.spu_id=#{spuId}
+    </select>
+</mapper>

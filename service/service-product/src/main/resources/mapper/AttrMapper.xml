@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xuanhe.gmall.product.mapper.AttrMapper">
+    <resultMap id="BaseResult" type="com.xuanhe.gmall.model.product.BaseAttrInfo">
+        <id column="id" property="id"/>
+        <result property="attrName" column="attr_name"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryLevel" column="category_level"/>
+        <collection property="attrValueList" ofType="com.xuanhe.gmall.model.product.BaseAttrValue">
+            <id property="id" column="attrvalue_id"/>
+            <result property="attrId" column="attr_id"/>
+            <result property="valueName" column="value_name"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="BaseAttrValueMap" type="com.xuanhe.gmall.model.product.BaseAttrValue">
+        <id property="id" column="attrvalue_id"/>
+        <result property="attrId" column="attr_id"/>
+        <result property="valueName" column="value_name"/>
+    </resultMap>
+    <insert id="saveAttrInfo" useGeneratedKeys="true" keyProperty="id" parameterType="com.xuanhe.gmall.model.product.BaseAttrInfo">
+        insert into base_attr_info (attr_name,category_id,category_level)
+        values
+        (#{attrName},#{categoryId},#{categoryLevel})
+    </insert>
+    <insert id="insertAttrValues">
+        insert into base_attr_value (attr_id,value_name)
+        values
+        <foreach collection="list" item="attrValue" separator="," >
+            (#{attrValue.attrId},#{attrValue.valueName})
+        </foreach>
+    </insert>
+    <update id="updateInfoById">
+        update base_attr_info set attr_name=#{attrName} where id=#{id}
+    </update>
+    <delete id="deleteValuesByAttrId">
+        delete from base_attr_value where
+        attr_id =#{id}
+    </delete>
+    <select id="getAttrInfoList" resultMap="BaseResult">
+        select bai.id id ,bai.attr_name ,bai.category_id ,bai.category_level ,bav.id attrvalue_id ,bav.attr_id ,bav.value_name
+        from base_attr_info bai ,base_attr_value bav
+        where bai.category_id=#{id} and bai.id=bav.attr_id
+    </select>
+    <select id="getAttrValueList" resultMap="BaseAttrValueMap">
+        select * from base_attr_value where attr_id=#{attrId}
+    </select>
+</mapper>
