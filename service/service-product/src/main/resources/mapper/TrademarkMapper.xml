@@ -9,4 +9,11 @@
     <select id="getTrademarkList" resultMap="BaseResult">
         select * from base_trademark
     </select>
+    <select id="getTotal" resultType="java.lang.Integer">
+        select count(*) from  base_trademark
+    </select>
+    <select id="getBaseTrademarkPage" resultMap="BaseResult">
+        select * from base_trademark
+        limit #{start},#{size}
+    </select>
 </mapper>

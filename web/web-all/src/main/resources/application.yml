@@ -1,0 +1,19 @@
+server:
+  port: 8300
+spring:
+  thymeleaf:
+    cache: false
+    mode: HTML5
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.200.128:8848
+  application:
+    name: web-all
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 60000
+        readTimeout: 60000
+

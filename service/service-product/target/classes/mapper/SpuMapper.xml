@@ -21,7 +21,7 @@
         </collection>
     </resultMap>
     <resultMap id="spuImage" type="com.xuanhe.gmall.model.product.SpuImage">
-        <id property="id" column="img_id"/>
+        <id property="id" column="id"/>
         <result property="imgName" column="img_name"/>
         <result property="imgUrl" column="img_url"/>
         <result property="spuId" column="spu_id"/>
@@ -37,6 +37,12 @@
             <result property="baseSaleAttrId" column="value_base_sale_attr_id"/>
             <result property="spuId" column="value_spu_id"/>
             <result property="saleAttrValueName" column="sale_attr_value_name"/>
+        </collection>
+    </resultMap>
+    <resultMap id="saleAttr" type="com.xuanhe.gmall.model.product.SpuSaleAttr" autoMapping="true">
+        <id property="id" column="id"/>
+        <collection property="spuSaleAttrValueList" ofType="com.xuanhe.gmall.model.product.SpuSaleAttrValue" autoMapping="true">
+            <id property="id" column="value_id"/>
         </collection>
     </resultMap>
     <insert id="saveSpuInfo" useGeneratedKeys="true" keyProperty="id">
@@ -87,5 +93,17 @@
         and ssa.base_sale_attr_id=ssav.base_sale_attr_id
 --         and ssa.sale_attr_name=ssav.sale_attr_name 都可以
         and ssa.spu_id=#{spuId}
+    </select>
+    <select id="getspuSaleAttrListBySpuIdAndSkuId" resultMap="saleAttr">
+        select ssa.*,ssav.id value_id ,ssav.*, if(skv.sku_id,1,0) as isChecked
+        from spu_sale_attr ssa
+        join spu_sale_attr_value ssav
+        on ssa.base_sale_attr_id=ssav.base_sale_attr_id
+        and  ssa.spu_id=ssav.spu_id
+        and ssa.spu_id=#{spuId}
+        left join sku_sale_attr_value skv
+        on skv.sale_attr_value_id=ssav.id
+        and skv.sku_id=#{skuId}
+        ORDER BY ssa.base_sale_attr_id,ssav.id
     </select>
 </mapper>

@@ -4,13 +4,17 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 全局统一返回结果类 {数据查询}
  *
  */
 @Data
 @ApiModel(value = "全局统一返回结果")
-public class Result<T> {
+public class Result<T> implements Serializable {
+
+    private static final long serialVersionUID = -4355260088469342116L;
 
     public static void main(String[] args) {
         Result<String> ok = Result.ok("1");

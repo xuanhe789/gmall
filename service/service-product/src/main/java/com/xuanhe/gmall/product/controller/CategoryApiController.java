@@ -1,10 +1,12 @@
 package com.xuanhe.gmall.product.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xuanhe.gmall.model.product.BaseCategory1;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.product.BaseCategory2;
 import com.xuanhe.gmall.model.product.BaseCategory3;
 import com.xuanhe.gmall.product.service.CategoryService;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

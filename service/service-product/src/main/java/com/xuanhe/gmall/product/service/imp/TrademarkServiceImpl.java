@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.product.service.imp;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.xuanhe.gmall.model.product.BaseTrademark;
 import com.xuanhe.gmall.product.mapper.TrademarkMapper;
 import com.xuanhe.gmall.product.service.TrademarkService;
@@ -15,5 +16,14 @@ public class TrademarkServiceImpl implements TrademarkService {
     @Override
     public List<BaseTrademark> getTrademarkList() {
         return trademarkMapper.getTrademarkList();
+    }
+
+    @Override
+    public void getBaseTrademarkPage(IPage pageinfo) {
+        int total=trademarkMapper.getTotal();
+        pageinfo.setTotal(total);
+        long size = pageinfo.getSize();
+        List<BaseTrademark> baseTrademarks= trademarkMapper.getBaseTrademarkPage(size,(pageinfo.getCurrent()-1)*size);
+        pageinfo.setRecords(baseTrademarks);
     }
 }

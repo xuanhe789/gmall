@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xuanhe.gmall.product.mapper.SkuMapper">
+    <resultMap id="skuInfo" type="com.xuanhe.gmall.model.product.SkuInfo">
+        <id property="id" column="id"/>
+        <result property="spuId" column="spu_id"/>
+        <result property="tmId" column="tm_id"/>
+        <result property="category3Id" column="category3_id"/>
+        <result property="price" column="price"/>
+        <result property="skuName" column="sku_name"/>
+        <result property="skuDesc" column="sku_desc"/>
+        <result property="skuDefaultImg" column="sku_default_img"/>
+        <result property="weight" column="weight"/>
+        <result property="isSale" column="is_sale"/>
+    </resultMap>
+    <resultMap id="skuImage" type="com.xuanhe.gmall.model.product.SkuImage">
+        <id property="id" column="id"/>
+        <result property="skuId" column="sku_id"/>
+        <result property="spuImgId" column="spu_img_id"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="imgUrl" column="img_url"/>
+        <result property="imgName" column="img_name"/>
+    </resultMap>
+    <insert id="saveSkuInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into sku_info (spu_id,tm_id,category3_id,price,sku_name,sku_desc,sku_default_img,weight)
+        values
+        (#{spuId},#{tmId},#{category3Id},#{price},#{skuName},#{skuDesc},#{skuDefaultImg},#{weight})
+    </insert>
+    <insert id="saveSkuAttrValueList">
+        insert into sku_attr_value(sku_id,attr_id,value_id)
+        values
+        <foreach collection="list" item="item"  separator=",">
+            (#{item.skuId},#{item.attrId},#{item.valueId})
+        </foreach>
+    </insert>
+    <insert id="saveSkuImageList">
+        insert into sku_image (sku_id,img_name,img_url,spu_img_id,is_default)
+        values
+        <foreach collection="list" item="item"  separator=",">
+            (#{item.skuId},#{item.imgName},#{item.imgUrl},#{item.spuImgId},#{item.isDefault})
+        </foreach>
+    </insert>
+    <insert id="saveSkuSaleAttrValueList">
+        insert into sku_sale_attr_value (sku_id,spu_id,sale_attr_value_id)
+        values
+        <foreach collection="list" item="item"  separator=",">
+            (#{item.skuId},#{item.spuId},#{item.saleAttrValueId})
+        </foreach>
+    </insert>
+    <update id="onSale">
+        update sku_info set is_sale=1 where id=#{skuId}
+    </update>
+    <update id="upSale">
+        update sku_info set is_sale=0 where id=#{skuId}
+    </update>
+    <select id="getTotal" resultType="java.lang.Integer">
+        select count(*) from sku_info
+    </select>
+    <select id="getListPage" resultMap="skuInfo">
+        select * from sku_info
+        limit #{start},#{limit}
+    </select>
+    <select id="getSkuInfoById" resultMap="skuInfo">
+        select * from sku_info where id=#{skuId}
+    </select>
+    <select id="getSkuImagesBySkuId" resultMap="skuImage">
+        select * from sku_image where sku_id=#{skuId}
+    </select>
+    <select id="getSkuValueMap" resultType="java.util.HashMap">
+        select  GROUP_CONCAT(sale_attr_value_id ORDER BY sale_attr_value_id SEPARATOR '|') value_ids,sku_id
+        FROM sku_sale_attr_value
+        WHERE spu_id=#{spuId}
+        group by sku_id
+    </select>
+</mapper>

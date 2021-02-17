@@ -19,8 +19,8 @@ public class SpuServiceImpl implements SpuService {
     public IPage<SpuInfo> getSpuList(IPage page, Long category3Id) {
         long total=spuMapper.getTotal(category3Id);
         page.setTotal(total);
-        page.setPages(total%page.getSize()==0?total/page.getSize():total/page.getSize()+1);
-        List<SpuInfo> spuList = spuMapper.getSpuList(page.getCurrent()-1,page.getSize(), category3Id);
+        long size = page.getSize();
+        List<SpuInfo> spuList = spuMapper.getSpuList((page.getCurrent()-1)*size, size, category3Id);
         page.setRecords(spuList);
         return page;
     }

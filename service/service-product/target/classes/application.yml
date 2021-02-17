@@ -7,3 +7,14 @@ fdfs:
   tracker-list: 192.168.200.128:22122
 project:
   dfsUrl: http://192.168.200.128:8080/
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.200.128:8848
+  application:
+    name: product-service
+  redis:
+    host: 192.168.200.128
+    port: 6379
+

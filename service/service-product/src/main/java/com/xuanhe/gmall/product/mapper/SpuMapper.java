@@ -26,4 +26,6 @@ public interface SpuMapper {
     List<SpuImage> getSpuImageListBySpuId(Long spuId);
 
     List<SpuSaleAttr> getspuSaleAttrListBySpuId(Long spuId);
+
+    List<SpuSaleAttr> getspuSaleAttrListBySpuIdAndSkuId(@Param("spuId") Long spuId, @Param("skuId") Long skuId);
 }
