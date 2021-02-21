@@ -16,26 +16,69 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Service
 public class ItemServiceImpl implements ItemService {
     @Autowired
     ProductFeignClient productFeignClient;
+    @Autowired
+    ThreadPoolExecutor threadPoolExecutor;
     @Override
     public Map<String, Object> getItem(Long skuId) {
-        SkuInfo skuInfo = (SkuInfo) productFeignClient.getSkuInfo(skuId);
-        BigDecimal price=productFeignClient.getSkuPrice(skuId);
-        List<SpuSaleAttr> spuSaleAttrList=productFeignClient.getSpuSaleAttrList(skuInfo.getSpuId(),skuId);
-        List<SkuImage> skuImages=productFeignClient.getSkuImages(skuId);
-        BaseCategoryView baseCategoryView=productFeignClient.getBaseCategoryView(skuInfo.getCategory3Id());
-        Map<String, Long> skuValueMap = productFeignClient.getSkuValueMap(skuInfo.getSpuId());
+        long start = System.currentTimeMillis();
         Map<String, Object> result=new HashMap<>();
-        skuInfo.setSkuImageList(skuImages);
-        result.put("skuInfo",skuInfo);
-        result.put("price",price);
-        result.put("spuSaleAttrList",spuSaleAttrList);
-        result.put("categoryView",baseCategoryView);
-        result.put("valuesSkuJson", JSONObject.toJSONString(skuValueMap));
+        CompletableFuture<SkuInfo> skuInfoCompletableFuture = CompletableFuture.supplyAsync(new Supplier<SkuInfo>() {
+            @Override
+            public SkuInfo get() {
+                SkuInfo skuInfo = (SkuInfo) productFeignClient.getSkuInfo(skuId);
+                result.put("skuInfo",skuInfo);
+                return skuInfo;
+            }
+        }, threadPoolExecutor);
+
+        CompletableFuture<Void> images = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
+            @Override
+            public void accept(SkuInfo skuInfo) {
+                List<SkuImage> skuImages = productFeignClient.getSkuImages(skuId);
+                skuInfo.setSkuImageList(skuImages);
+            }
+        }, threadPoolExecutor);
+
+        CompletableFuture<Void> categoryView = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
+            @Override
+            public void accept(SkuInfo skuInfo) {
+                BaseCategoryView baseCategoryView = productFeignClient.getBaseCategoryView(skuInfo.getCategory3Id());
+                result.put("categoryView", baseCategoryView);
+            }
+        }, threadPoolExecutor);
+        CompletableFuture<Void> spuSaleAttrList = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
+            @Override
+            public void accept(SkuInfo skuInfo) {
+                List<SpuSaleAttr> spuSaleAttrList = productFeignClient.getSpuSaleAttrList(skuInfo.getSpuId(), skuId);
+                result.put("spuSaleAttrList", spuSaleAttrList);
+            }
+        }, threadPoolExecutor);
+        CompletableFuture<Void> valuesSkuJson = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
+            @Override
+            public void accept(SkuInfo skuInfo) {
+                Map<String, Long> skuValueMap = productFeignClient.getSkuValueMap(skuInfo.getSpuId());
+                result.put("valuesSkuJson", JSONObject.toJSONString(skuValueMap));
+            }
+        }, threadPoolExecutor);
+        CompletableFuture<Void> price = CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run() {
+                BigDecimal price = productFeignClient.getSkuPrice(skuId);
+                result.put("price", price);
+            }
+        }, threadPoolExecutor);
+        CompletableFuture.allOf(skuInfoCompletableFuture,images,price,categoryView,valuesSkuJson,spuSaleAttrList).join();
+        long end = System.currentTimeMillis();
+        System.out.println("耗时:"+(end-start));
         return result;
     }
 }
