@@ -1,6 +1,7 @@
 package com.xuanhe.gmall.product.feign;
 
 import com.xuanhe.gmall.common.result.Result;
+import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.BaseCategoryView;
 import com.xuanhe.gmall.model.product.SkuImage;
 import com.xuanhe.gmall.model.product.SkuInfo;
@@ -39,4 +40,7 @@ public interface ProductFeignClient {
 
     @GetMapping("/api/product/inner/getSkuValueMap/{spuId}")
     Map<String,Long> getSkuValueMap(@PathVariable("spuId") Long spuId);
+
+    @GetMapping("/api/product/inner/getGoodsBySkuId/{skuId}")
+    Goods getGoodsBySkuId(@PathVariable("skuId") Long skuId);
 }

@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.product.mapper;
 
+import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.SkuAttrValue;
 import com.xuanhe.gmall.model.product.SkuImage;
 import com.xuanhe.gmall.model.product.SkuInfo;
@@ -33,4 +34,6 @@ public interface SkuMapper {
     List<SkuImage> getSkuImagesBySkuId(Long skuId);
 
     List<Map> getSkuValueMap(Long spuId);
+
+    Goods getGoodsBySkuId(Long skuId);
 }

@@ -1,6 +1,7 @@
 package com.xuanhe.gmall.product.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.BaseCategoryView;
 import com.xuanhe.gmall.model.product.SkuImage;
 import com.xuanhe.gmall.model.product.SkuInfo;
@@ -29,4 +30,6 @@ public interface SkuService {
 
 
     Map<String, Long> getSkuValueMap(Long spuId);
+
+    Goods getGoodsBySkuId(Long skuId);
 }

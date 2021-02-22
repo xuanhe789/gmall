@@ -16,6 +16,11 @@
             <artifactId>fastdfs-client</artifactId>
             <version>1.26.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.xuanhe.gmall</groupId>
+            <artifactId>service-list-client</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -2,6 +2,8 @@ package com.xuanhe.gmall.product.service.imp;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.xuanhe.gmall.common.cacheAspect.GmallCache;
+import com.xuanhe.gmall.list.feign.ListFeignClient;
+import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.*;
 import com.xuanhe.gmall.product.mapper.SkuMapper;
 import com.xuanhe.gmall.product.mapper.SpuMapper;
@@ -21,9 +23,12 @@ public class SkuServiceImpl implements SkuService {
     @Autowired
     RedisTemplate redisTemplate;
     @Autowired
+    ListFeignClient listFeignClient;
+    @Autowired
     SkuMapper skuMapper;
     @Autowired
     SpuMapper spuMapper;
+
 
     @Transactional
     @Override
@@ -54,12 +59,14 @@ public class SkuServiceImpl implements SkuService {
     @Override
     public boolean onSale(Long skuId) {
         Integer integer=skuMapper.onSale(skuId);
+        listFeignClient.onsale(skuId);
         return true;
     }
 
     @Override
     public boolean upSale(Long skuId) {
         Integer result=skuMapper.upSale(skuId);
+        listFeignClient.cancelSale(skuId);
         return true;
     }
 
@@ -101,6 +108,12 @@ public class SkuServiceImpl implements SkuService {
         Map<String,Long> result= new HashMap<>();
         skuValueMap.stream().forEach(map -> result.put((String) map.get("value_ids"),(Long) map.get("sku_id")));
         return result;
+    }
+
+    @Override
+    public Goods getGoodsBySkuId(Long skuId) {
+        Goods goods=skuMapper.getGoodsBySkuId(skuId);
+        return goods;
     }
 
 }

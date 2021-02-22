@@ -1,6 +1,7 @@
 package com.xuanhe.gmall.product.controller;
 
 import com.xuanhe.gmall.common.result.Result;
+import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.BaseCategoryView;
 import com.xuanhe.gmall.model.product.SkuImage;
 import com.xuanhe.gmall.model.product.SkuInfo;
@@ -59,5 +60,12 @@ public class ProductApiController {
     Map<String,Long> getSkuValueMap(@PathVariable("spuId") Long spuId){
         Map<String,Long> result=skuService.getSkuValueMap(spuId);
         return result;
+    }
+
+
+    @GetMapping("/api/product/inner/getGoodsBySkuId/{skuId}")
+    Goods getGoodsBySkuId(@PathVariable("skuId") Long skuId){
+        Goods goods=skuService.getGoodsBySkuId(skuId);
+        return goods;
     }
 }

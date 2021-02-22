@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.item.service.ItemService;
+import com.xuanhe.gmall.list.feign.ListFeignClient;
 import com.xuanhe.gmall.model.product.BaseCategoryView;
 import com.xuanhe.gmall.model.product.SkuImage;
 import com.xuanhe.gmall.model.product.SkuInfo;
@@ -27,10 +28,19 @@ public class ItemServiceImpl implements ItemService {
     ProductFeignClient productFeignClient;
     @Autowired
     ThreadPoolExecutor threadPoolExecutor;
+    @Autowired
+    ListFeignClient listFeignClient;
     @Override
     public Map<String, Object> getItem(Long skuId) {
         long start = System.currentTimeMillis();
         Map<String, Object> result=new HashMap<>();
+        //异步更新热度值
+        CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run() {
+                listFeignClient.incrHotScore(skuId);
+            }
+        },threadPoolExecutor);
         CompletableFuture<SkuInfo> skuInfoCompletableFuture = CompletableFuture.supplyAsync(new Supplier<SkuInfo>() {
             @Override
             public SkuInfo get() {
