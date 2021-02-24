@@ -91,4 +91,9 @@ public class ItemServiceImpl implements ItemService {
         System.out.println("耗时:"+(end-start));
         return result;
     }
+
+    @Override
+    public List<JSONObject> getCategoryList() {
+        return productFeignClient.getCategoryList();
+    }
 }

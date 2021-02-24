@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.product.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.BaseCategoryView;
@@ -67,5 +68,10 @@ public class ProductApiController {
     Goods getGoodsBySkuId(@PathVariable("skuId") Long skuId){
         Goods goods=skuService.getGoodsBySkuId(skuId);
         return goods;
+    }
+
+    @GetMapping("/api/product/inner/getCategoryList")
+    List<JSONObject> getCategoryList(){
+        return baseCategoryViewService.getCategoryList();
     }
 }

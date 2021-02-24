@@ -13,4 +13,7 @@
     <select id="getBaseCategoryView" resultMap="BaseResult">
         select * from base_category_view where category3_id=#{category3Id}
     </select>
+    <select id="getAll" resultMap="BaseResult">
+        select * from base_category_view
+    </select>
 </mapper>

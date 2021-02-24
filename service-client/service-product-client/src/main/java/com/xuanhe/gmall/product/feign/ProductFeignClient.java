@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.product.feign;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.list.Goods;
 import com.xuanhe.gmall.model.product.BaseCategoryView;
@@ -26,6 +27,7 @@ public interface ProductFeignClient {
      */
     @GetMapping("/api/product/inner/getSkuInfo/{skuId}")
     SkuInfo getSkuInfo(@PathVariable("skuId") Long skuId);
+
     @GetMapping("/api/product/inner/getSkuPrice/{skuId}")
     BigDecimal getSkuPrice(@PathVariable("skuId") Long skuId);
 
@@ -43,4 +45,7 @@ public interface ProductFeignClient {
 
     @GetMapping("/api/product/inner/getGoodsBySkuId/{skuId}")
     Goods getGoodsBySkuId(@PathVariable("skuId") Long skuId);
+
+    @GetMapping("/api/product/inner/getCategoryList")
+    List<JSONObject> getCategoryList();
 }
