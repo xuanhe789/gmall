@@ -1,0 +1,77 @@
+authUrls:
+  url: trade.html,myOrder.html
+server:
+  port: 9200
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: service-product
+          predicates:
+            - Path=/*/product/**
+          uri: lb://service-product
+        - id: service-item
+          predicates:
+            - Path=/*/item/**
+          uri: lb://service-item
+        - id: service-user
+          predicates:
+            - Path=/*/user/**
+          uri: lb://service-user
+        - id: service-cart
+          predicates:
+            - Path=/*/cart/**
+          uri: lb://service-cart
+        - id: service-order
+          predicates:
+            - Path=/*/order/**
+          uri: lb://service-order
+        - id: service-payment
+          predicates:
+            - Path=/*/payment/**
+          uri: lb://service-payment
+        - id: service-activity
+          predicates:
+            - Path=/*/activity/**
+          uri: lb://service-activity
+        - id: web-item
+          predicates:
+            - Host=item.gmall.com
+          uri: lb://web-all
+        - id: web-index
+          predicates:
+            - Host=www.gmall.com
+          uri: lb://web-all
+        - id: web-list
+          predicates:
+            - Host=list.gmall.com
+          uri: lb://web-all
+
+        - id: web-passport
+          predicates:
+            - Host=passport.gmall.com
+          uri: lb://web-all
+        - id: web-cart
+          predicates:
+            - Host=cart.gmall.com
+          uri: lb://web-all
+        - id: web-order
+          predicates:
+            - Host=order.gmall.com
+          uri: lb://web-all
+        - id: web-payment
+          predicates:
+            - Host=payment.gmall.com
+          uri: lb://web-all
+        - id: web-activity
+          predicates:
+            - Host=activity.gmall.com
+          uri: lb://web-all
+    nacos:
+      discovery:
+        server-addr: 47.115.74.81:8848

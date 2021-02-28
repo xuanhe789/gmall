@@ -15,6 +15,12 @@ spring:
   application:
     name: product-service
   redis:
-    host: 192.168.200.128
+    host: 47.115.74.81
     port: 6379
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 60000
+        readTimeout: 60000
 

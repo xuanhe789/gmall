@@ -24,7 +24,7 @@ public class ItemApiController {
         Map<String,Object> map = itemService.getItem(skuId);
         return Result.ok(map);
     }
-    @GetMapping("/api/item/getCategoryList")
+    @GetMapping("/getCategoryList")
     List<JSONObject> getCategoryList(){
         return itemService.getCategoryList();
     }
