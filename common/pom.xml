@@ -44,6 +44,7 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+
 <!--        &lt;!&ndash; 服务注册&ndash;&gt;-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
