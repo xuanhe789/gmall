@@ -95,32 +95,31 @@
     </select>
     <select id="getGoodsBySkuId" resultMap="Goods">
         SELECT
-	ski.id 'id',
-	ski.price 'price',
-	ski.sku_default_img,
-	ski.tm_id,
-	ski.sku_name,
-	bt.logo_url,
-	bt.tm_name,
-	bc3.id 'category3_id',
-	bc3.`name` 'category3_name',
-	bc2.id 'category2_id',
-	bc2.`name` 'category2_name',
-	bc1.id 'category1_id',
-	bc1.`name` 'category1_name',
-	sav.attr_id 'attr_id',
-	bai.attr_name,
-	bav.value_name 'attr_value'
-FROM
-	sku_info ski
-	JOIN base_trademark bt ON ski.tm_id = bt.id
-	JOIN base_category3 bc3 ON ski.category3_id = bc3.id
-	JOIN base_category2 bc2 ON bc3.category2_id = bc2.id
-	JOIN base_category1 bc1 ON bc2.category1_id = bc1.id
-	JOIN sku_attr_value sav ON ski.id = sav.sku_id
-	JOIN base_attr_info bai ON sav.attr_id = bai.id
-	JOIN base_attr_value bav ON sav.value_id = bav.id
-WHERE
-	ski.id =#{skuId}
+            ski.id 'id',
+            ski.price 'price',
+            ski.sku_default_img,
+            ski.tm_id,
+            bt.logo_url,
+            bt.tm_name,
+            bc3.id 'category3_id',
+            bc3.`name` 'category3_name',
+            bc2.id 'category2_id',
+            bc2.`name` 'category2_name',
+            bc1.id 'category1_id',
+            bc1.`name` 'category1_name',
+            sav.attr_id 'attr_id',
+            bai.attr_name,
+            bav.value_name 'attr_value'
+        FROM
+            sku_info ski
+            JOIN base_trademark bt ON ski.tm_id = bt.id
+            JOIN base_category3 bc3 ON ski.category3_id = bc3.id
+            JOIN base_category2 bc2 ON bc3.category2_id = bc2.id
+            JOIN base_category1 bc1 ON bc2.category1_id = bc1.id
+            JOIN sku_attr_value sav ON ski.id = sav.sku_id
+            JOIN base_attr_info bai ON sav.attr_id = bai.id
+            JOIN base_attr_value bav ON sav.value_id = bav.id
+        WHERE
+            ski.id =#{skuId}
     </select>
 </mapper>

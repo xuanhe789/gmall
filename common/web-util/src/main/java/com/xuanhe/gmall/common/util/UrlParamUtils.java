@@ -5,7 +5,7 @@ import org.apache.commons.lang.ArrayUtils;
 
 public class UrlParamUtils {
     public static String getUrlParam(SearchParam searchParam){
-        StringBuilder stringBuilder = new StringBuilder("http://list.gmall.com:8300/list.html?");
+        StringBuilder stringBuilder = new StringBuilder("http://list.gmall.com/list.html?");
         Long category3Id = searchParam.getCategory3Id();
         String keyword = searchParam.getKeyword();
         String trademark = searchParam.getTrademark();

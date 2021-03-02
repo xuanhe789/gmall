@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.user.controller;
 
+import com.xuanhe.gmall.common.constant.RedisConst;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.user.UserInfo;
 import com.xuanhe.gmall.user.service.UserService;
@@ -33,8 +34,9 @@ public class UserController {
             map.put("nickName", user.getNickName());
             map.put("token", token);
             //存到将token存入redis
+            user.setPasswd("");
             redisTemplate.opsForValue()
-                    .set(RedisConst.USER_LOGIN_KEY_PREFIX + token, user.getId().toString(), RedisConst.USERKEY_TIMEOUT, TimeUnit.SECONDS);
+                    .set(RedisConst.USER_LOGIN_KEY_PREFIX + token, user, RedisConst.USERKEY_TIMEOUT, TimeUnit.SECONDS);
             return Result.ok(map);
         }else {
             return Result.fail("用户或密码失败");
@@ -49,4 +51,11 @@ public class UserController {
         }
         return Result.ok();
     }
+
+    @PostMapping("/verify")
+    public UserInfo verify(@RequestParam String token){
+        UserInfo userInfo= (UserInfo) redisTemplate.opsForValue().get(RedisConst.USER_LOGIN_KEY_PREFIX+token);
+        return userInfo;
+    }
+
 }

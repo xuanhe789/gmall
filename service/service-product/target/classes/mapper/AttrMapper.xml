@@ -18,7 +18,8 @@
         <result property="attrId" column="attr_id"/>
         <result property="valueName" column="value_name"/>
     </resultMap>
-    <insert id="saveAttrInfo" useGeneratedKeys="true" keyProperty="id" parameterType="com.xuanhe.gmall.model.product.BaseAttrInfo">
+    <insert id="saveAttrInfo" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.xuanhe.gmall.model.product.BaseAttrInfo">
         insert into base_attr_info (attr_name,category_id,category_level)
         values
         (#{attrName},#{categoryId},#{categoryLevel})
@@ -26,7 +27,7 @@
     <insert id="insertAttrValues">
         insert into base_attr_value (attr_id,value_name)
         values
-        <foreach collection="list" item="attrValue" separator="," >
+        <foreach collection="list" item="attrValue" separator=",">
             (#{attrValue.attrId},#{attrValue.valueName})
         </foreach>
     </insert>
@@ -38,9 +39,20 @@
         attr_id =#{id}
     </delete>
     <select id="getAttrInfoList" resultMap="BaseResult">
-        select bai.id id ,bai.attr_name ,bai.category_id ,bai.category_level ,bav.id attrvalue_id ,bav.attr_id ,bav.value_name
-        from base_attr_info bai ,base_attr_value bav
-        where bai.category_id=#{id} and bai.id=bav.attr_id
+        SELECT
+	        bai.id id,
+	        bai.attr_name,
+	        bai.category_id,
+	        bai.category_level,
+	        bav.id attrvalue_id,
+	        bav.attr_id,
+	        bav.value_name
+        FROM
+	        base_attr_info bai,
+	        base_attr_value bav
+        WHERE
+	        bai.category_id =#{ id }
+	        AND bai.id = bav.attr_id
     </select>
     <select id="getAttrValueList" resultMap="BaseAttrValueMap">
         select * from base_attr_value where attr_id=#{attrId}

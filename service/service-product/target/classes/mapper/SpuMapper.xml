@@ -85,25 +85,41 @@
         select * from spu_image where spu_id=#{spuId}
     </select>
     <select id="getspuSaleAttrListBySpuId" resultMap="spuSaleAttr">
-        select ssa.id attr_id , ssa.base_sale_attr_id base_sale_attr_id, ssa.spu_id spu_id ,ssa.sale_attr_name sale_attr_name,
-        ssav.id value_id ,ssav.spu_id value_spu_id ,ssav.base_sale_attr_id value_base_sale_attr_id ,ssav.sale_attr_name value_sale_attr_name
-        ,ssav.sale_attr_value_name sale_attr_value_name
-        from spu_sale_attr ssa,spu_sale_attr_value ssav
-        where ssa.spu_id=ssav.spu_id
-        and ssa.base_sale_attr_id=ssav.base_sale_attr_id
---         and ssa.sale_attr_name=ssav.sale_attr_name 都可以
-        and ssa.spu_id=#{spuId}
+       SELECT
+            ssa.id attr_id,
+            ssa.base_sale_attr_id base_sale_attr_id,
+            ssa.spu_id spu_id,
+            ssa.sale_attr_name sale_attr_name,
+            ssav.id value_id,
+            ssav.spu_id value_spu_id,
+            ssav.base_sale_attr_id value_base_sale_attr_id,
+            ssav.sale_attr_name value_sale_attr_name,
+            ssav.sale_attr_value_name sale_attr_value_name
+        FROM
+            spu_sale_attr ssa,
+            spu_sale_attr_value ssav
+        WHERE
+            ssa.spu_id = ssav.spu_id
+            AND ssa.base_sale_attr_id = ssav.base_sale_attr_id --         and ssa.sale_attr_name=ssav.sale_attr_name 都可以
+
+            AND ssa.spu_id =#{ spuId}
     </select>
     <select id="getspuSaleAttrListBySpuIdAndSkuId" resultMap="saleAttr">
-        select ssa.*,ssav.id value_id ,ssav.*, if(skv.sku_id,1,0) as isChecked
-        from spu_sale_attr ssa
-        join spu_sale_attr_value ssav
-        on ssa.base_sale_attr_id=ssav.base_sale_attr_id
-        and  ssa.spu_id=ssav.spu_id
-        and ssa.spu_id=#{spuId}
-        left join sku_sale_attr_value skv
-        on skv.sale_attr_value_id=ssav.id
-        and skv.sku_id=#{skuId}
-        ORDER BY ssa.base_sale_attr_id,ssav.id
+        SELECT
+            ssa.*,
+            ssav.id value_id,
+            ssav.*,
+        IF
+            ( skv.sku_id, 1, 0 ) AS isChecked
+        FROM
+            spu_sale_attr ssa
+            JOIN spu_sale_attr_value ssav ON ssa.base_sale_attr_id = ssav.base_sale_attr_id
+            AND ssa.spu_id = ssav.spu_id
+            AND ssa.spu_id =#{ spuId }
+            LEFT JOIN sku_sale_attr_value skv ON skv.sale_attr_value_id = ssav.id
+            AND skv.sku_id =#{ skuId }
+        ORDER BY
+            ssa.base_sale_attr_id,
+            ssav.id
     </select>
 </mapper>
