@@ -12,11 +12,13 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -53,11 +55,14 @@ public class AuthFilter implements GlobalFilter {
         // 用户登录认证
         //api接口，异步请求，校验用户必须登录
         UserInfo userInfo=null;
-        String token=null;
-        List<String> list = request.getHeaders().get("token");
-        if (list!=null){
-            token=list.get(0);
-            userInfo=userFeignClient.verify(token);
+        String token=getToken(request);
+        if (!StringUtils.isEmpty(token)){
+                userInfo=userFeignClient.verify(token);
+        }else {
+            //设置临时Id
+            String userTempId = getUserTempId(request);
+            request = request.mutate().header("userTempId", userTempId).build();
+            exchange = exchange.mutate().request(request).build();
         }
         if(antPathMatcher.match("/api/**/auth/**", path)) {
             if (userInfo==null){
@@ -77,7 +82,6 @@ public class AuthFilter implements GlobalFilter {
         if (userInfo!=null){
             request = request.mutate().header("userInfo", JSONObject.toJSONString(userInfo)).build();
             exchange = exchange.mutate().request(request).build();
-            return chain.filter(exchange);
         }
         //放行
         return chain.filter(exchange);
@@ -103,5 +107,62 @@ public class AuthFilter implements GlobalFilter {
         }
         DataBuffer buffer = resp.bufferFactory().wrap(returnStr.getBytes(StandardCharsets.UTF_8));
         return resp.writeWith(Flux.just(buffer));
+    }
+
+    /***
+     * 获得客户端cookie中的临时id
+     * @param request
+     * @return
+     */
+    private String getUserTempId(ServerHttpRequest request) {
+        String userTempId = null;
+
+        MultiValueMap<String, HttpCookie> cookies = request.getCookies();
+
+        if(null!=cookies&&cookies.size()>0){
+            List<HttpCookie> httpCookie = cookies.get("userTempId");
+            if(null!=httpCookie||httpCookie.size()>0){
+                userTempId = httpCookie.get(0).getValue();
+            }
+        }
+
+
+        if(StringUtils.isEmpty(userTempId)){
+            // 有可能是ajax异步请求，去headers获取userTempId
+            List<String> strings = request.getHeaders().get("userTempId");
+            if(null!=strings&&strings.size()>0) {
+                userTempId = strings.get(0);
+            }
+        }
+
+        return userTempId;
+    }
+
+    /***
+     * 获得客户端cookie中的token
+     * @param request
+     * @return
+     */
+    private String getToken(ServerHttpRequest request) {
+        String token = null;
+
+        MultiValueMap<String, HttpCookie> cookies = request.getCookies();
+
+        if(null!=cookies&&cookies.size()>0){
+            List<HttpCookie> httpCookie = cookies.get("token");
+            if(null!=httpCookie&&httpCookie.size()>0){
+                token = httpCookie.get(0).getValue();
+            }
+        }
+
+        if(StringUtils.isEmpty(token)){
+            // 有可能是ajax异步请求，去headers获取token
+            List<String> strings = request.getHeaders().get("token");
+            if(null!=strings&&strings.size()>0){
+                token = strings.get(0);
+            }
+        }
+
+        return token;
     }
 }
