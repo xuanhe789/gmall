@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xuanhe.gmall.cart.mapper.CartMapper">
+    <insert id="insert">
+        insert into cart_info (user_id,sku_id,cart_price,sku_num,img_url,sku_name)
+        values (
+        #{userId},
+        #{skuId},
+        #{cartPrice},
+        #{skuNum},
+        #{imgUrl},
+        #{skuName}
+        )
+    </insert>
+    <update id="updateById">
+        update cart_info
+        <set>
+            <if test="isChecked != null">
+                is_checked=#{isChecked},
+            </if>
+            <if test="skuPrice != null">
+                sku_price=#{skuPrice},
+            </if>
+            <if test="skuNum != null">
+                sku_num=#{skuNum},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateIscheckedByUserIdAndSkuId">
+        update cart_info set is_checked=#{isChecked}
+        where sku_id=#{skuId} and user_id=#{userId}
+    </update>
+    <delete id="deleteByuserTempId">
+        delete from cart_info where id=#{userTempId}
+    </delete>
+    <select id="getCartInfoList" resultType="com.xuanhe.gmall.model.cart.CartInfo">
+        select * from cart_info where id=#{id}
+    </select>
+</mapper>

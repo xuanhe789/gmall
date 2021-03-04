@@ -2,3 +2,7 @@
 *.iml
 
 .idea/
+/service/service-cart/target/
+/common/service-util/target/
+/common/common-util/target/
+**/target/
