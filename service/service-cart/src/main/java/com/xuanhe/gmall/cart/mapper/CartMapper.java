@@ -19,4 +19,10 @@ public interface CartMapper {
     void insert(CartInfo cartInfo);
 
     void updateIscheckedByUserIdAndSkuId(@Param("userId") String userId,@Param("skuId") Long skuId,@Param("isChecked") Integer isChecked);
+
+    void deleteByUserIdAndSkuId(@Param("skuId") Long skuId,@Param("userId") String userId);
+
+    CartInfo exist(@Param("skuId") Long skuId,@Param("userId") String userId);
+
+    void insertALL(CartInfo cartInfo);
 }

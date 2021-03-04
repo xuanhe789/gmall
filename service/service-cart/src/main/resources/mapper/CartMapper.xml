@@ -12,14 +12,23 @@
         #{skuName}
         )
     </insert>
+    <insert id="insertALL">
+        insert into cart_info (user_id,sku_id,cart_price,sku_num,img_url,sku_name,is_checked)
+        values (
+        #{userId},
+        #{skuId},
+        #{cartPrice},
+        #{skuNum},
+        #{imgUrl},
+        #{skuName},
+        #{isChecked}
+        )
+    </insert>
     <update id="updateById">
         update cart_info
         <set>
             <if test="isChecked != null">
                 is_checked=#{isChecked},
-            </if>
-            <if test="skuPrice != null">
-                sku_price=#{skuPrice},
             </if>
             <if test="skuNum != null">
                 sku_num=#{skuNum},
@@ -32,9 +41,15 @@
         where sku_id=#{skuId} and user_id=#{userId}
     </update>
     <delete id="deleteByuserTempId">
-        delete from cart_info where id=#{userTempId}
+        delete from cart_info where user_id=#{userTempId}
+    </delete>
+    <delete id="deleteByUserIdAndSkuId">
+        delete from cart_info where user_id=#{userId} and sku_id=#{skuId}
     </delete>
     <select id="getCartInfoList" resultType="com.xuanhe.gmall.model.cart.CartInfo">
-        select * from cart_info where id=#{id}
+        select * from cart_info where user_id=#{id}
+    </select>
+    <select id="exist" resultType="com.xuanhe.gmall.model.cart.CartInfo">
+        select * from cart_info where user_id=#{userId} and sku_id=#{skuId}
     </select>
 </mapper>

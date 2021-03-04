@@ -7,20 +7,18 @@ import com.xuanhe.gmall.model.cart.CartInfo;
 import com.xuanhe.gmall.model.user.UserInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/cart")
 public class CartController {
     @Autowired
     CartService cartService;
-    @PostMapping("/addCart/{skuId}/{skuNum}")
+    @PostMapping("/addToCart/{skuId}/{skuNum}")
     public Result addToCart(@PathVariable("skuId") Long skuId,
                             @PathVariable("skuNum") Integer skuNum,
                             HttpServletRequest request) {
@@ -50,6 +48,21 @@ public class CartController {
         cartService.checkCart(userId,skuId,isChecked);
         return Result.ok();
     }
+    /**
+     * 删除
+     *
+     * @param skuId
+     * @param request
+     * @return
+     */
+    @DeleteMapping("deleteCart/{skuId}")
+    public Result deleteCart(@PathVariable("skuId") Long skuId,
+                             HttpServletRequest request) {
+// 如何获取userId
+        String userId = getUserId(request);
+        cartService.deleteCartByUserId(skuId, userId);
+        return Result.ok();
+    }
 
     public String getUserId(HttpServletRequest request) {
         //获取用户信息
@@ -64,7 +77,7 @@ public class CartController {
             System.out.println(userTempId);
             userId=userTempId;
         }else {
-            userId=String.valueOf(userId);
+            userId=String.valueOf(userInfo.getId());
         }
         return userId;
     }
