@@ -29,7 +29,7 @@
         <result property="category2Name" column="category2_name"/>
         <result property="category3Id" column="category3_id"/>
         <result property="category3Name" column="category3_name"/>
-        <result property="title" column="sku_name"/>
+        <result property="title" column="title"/>
         <result property="price" column="price"/>
         <result property="tmId" column="tm_id"/>
         <result property="tmName" column="tm_name"/>
@@ -99,6 +99,7 @@
             ski.price 'price',
             ski.sku_default_img,
             ski.tm_id,
+            ski.sku_name 'title',
             bt.logo_url,
             bt.tm_name,
             bc3.id 'category3_id',

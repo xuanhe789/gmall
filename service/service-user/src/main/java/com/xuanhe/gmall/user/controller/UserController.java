@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping("/logout")
     public Result logout(HttpServletRequest httpServletRequest){
         String token=httpServletRequest.getHeader("token");
-        if (StringUtils.isEmpty(token)){
+        if (!StringUtils.isEmpty(token)){
             redisTemplate.delete(RedisConst.USER_LOGIN_KEY_PREFIX + token);
         }
         return Result.ok();

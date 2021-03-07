@@ -60,8 +60,8 @@ public class ListServiceImpl implements ListService {
 
     @Override
     public void cancelSale(Long skuId) {
-        Goods goods=productFeignClient.getGoodsBySkuId(skuId);
-        goodsRespository.delete(goods);
+//        Goods goods=productFeignClient.getGoodsBySkuId(skuId);
+        goodsRespository.deleteById(skuId);
     }
 
     @Override

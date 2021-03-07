@@ -40,7 +40,7 @@ public class GmallCacheAspect {
         //获取缓存key的前缀
         String cacheKey = gmallCacheannotation.prefix()+":"+ StringUtils.join(Arrays.asList(args),":");
         // 表示缓存不为空，则直接返回数据
-        result = cacheHit(signature, cacheKey);
+        result = cacheHit(cacheKey);
         if (result!=null){
             return result;
         }
@@ -51,7 +51,7 @@ public class GmallCacheAspect {
             boolean flag = lock.tryLock(100, 10, TimeUnit.SECONDS);
             if (flag){
                 //双捡，再判断一次缓存是否有数据
-                result = cacheHit(signature, cacheKey);
+                result = cacheHit(cacheKey);
                 if (result!=null){
                     return result;
                 }
@@ -68,7 +68,7 @@ public class GmallCacheAspect {
             }else {
                 //没有获取到锁的线程
                 Thread.sleep(2000);
-                return cacheHit(signature,cacheKey);
+                return cacheHit(cacheKey);
             }
         }catch (Throwable e) {
             e.printStackTrace();
@@ -77,8 +77,10 @@ public class GmallCacheAspect {
         }
         return result;
     }
-
-    public Object cacheHit(Signature signature,String key){
+    /*
+    * 从缓存中获取数据
+    * */
+    public Object cacheHit(String key){
         Object result = redisTemplate.opsForValue().get(key);
         if (result!=null){
             return result;

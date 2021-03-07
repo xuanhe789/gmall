@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.xuanhe.gmall.cart.mapper.CartMapper">
-    <insert id="insert">
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into cart_info (user_id,sku_id,cart_price,sku_num,img_url,sku_name)
         values (
         #{userId},
@@ -12,7 +12,7 @@
         #{skuName}
         )
     </insert>
-    <insert id="insertALL">
+    <insert id="insertALL" keyProperty="id" useGeneratedKeys="true">
         insert into cart_info (user_id,sku_id,cart_price,sku_num,img_url,sku_name,is_checked)
         values (
         #{userId},

@@ -9,7 +9,7 @@ var auth = {
     },
 
     removeToken() {
-        return $.cookie('token', '', {domain: 'gmall.com', expires: 7, path: '/'})
+        return $.removeCookie('token',{domain:'gmall.com',path:'/'})
     },
 
     isTokenExist() {
@@ -35,7 +35,7 @@ var auth = {
     },
 
     removeUserTempId() {
-        return $.cookie('userTempId', '', {domain: 'gmall.com', expires: 7, path: '/'})
+        return $.removeCookie('userTempId',  {domain: 'gmall.com',  path: '/'})
     },
 
     isUserTempIdExist() {
@@ -54,7 +54,7 @@ var auth = {
     },
 
     removeUserInfo() {
-        return $.cookie('userInfo', '', {domain: 'gmall.com', expires: 7, path: '/'})
+        return $.removeCookie('userInfo',  {domain: 'gmall.com', path: '/'})
     },
 
     isUserInfoExist() {

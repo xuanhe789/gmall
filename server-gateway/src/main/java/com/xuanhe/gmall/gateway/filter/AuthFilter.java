@@ -121,7 +121,7 @@ public class AuthFilter implements GlobalFilter {
 
         if(null!=cookies&&cookies.size()>0){
             List<HttpCookie> httpCookie = cookies.get("userTempId");
-            if(null!=httpCookie||httpCookie.size()>0){
+            if(httpCookie!=null||httpCookie.size()>0){
                 userTempId = httpCookie.get(0).getValue();
             }
         }

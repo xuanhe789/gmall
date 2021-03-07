@@ -25,16 +25,28 @@ public class CartServiceImpl implements CartService {
     RedisTemplate redisTemplate;
     @Autowired
     CartMapper cartMapper;
+
+    /*
+    * 向已登录用户/临时用户的购物车添加数据
+    * */
     @Override
-    public void addToCart(Long skuId, String userId, Integer skuNum) {
-        CartInfo cartInfoExist=cartMapper.exist(skuId,userId);
+    public void addToCart(Long skuId, String userId, Integer skuNum,Boolean isTempId) {
         String cartKey = getCartKey(userId);
+        CartInfo cartInfoExist=new CartInfo();
+        if (!isTempId){
+            cartInfoExist=cartMapper.exist(skuId,userId);
+        }
+        else {
+            cartInfoExist= (CartInfo) redisTemplate.boundHashOps(cartKey).get(skuId.toString());
+        }
         //如果该商品已存在购物车，则修改数量
         if (cartInfoExist!=null){
             //数量相加
             cartInfoExist.setSkuNum(cartInfoExist.getSkuNum()+skuNum);
-            //更新数据库
-            cartMapper.updateById(cartInfoExist);
+            if (!isTempId) {
+                //更新数据库
+                cartMapper.updateById(cartInfoExist);
+            }
             //更新缓存
             redisTemplate.boundHashOps(cartKey).put(skuId.toString(),cartInfoExist);
         }else {
@@ -48,7 +60,9 @@ public class CartServiceImpl implements CartService {
             cartInfo.setUserId(userId);
             cartInfo.setSkuPrice(skuInfo.getPrice());
             cartInfo.setSkuId(skuId);
-            cartMapper.insertALL(cartInfo);
+            if (!isTempId){
+                cartMapper.insertALL(cartInfo);
+            }
             //加入缓存
             redisTemplate.boundHashOps(cartKey).put(skuId.toString(),cartInfo);
         }
@@ -57,7 +71,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public List<CartInfo> getCartList(String userId,String userTempId) {
         List<CartInfo> cartInfoList=new ArrayList<>();
-        List<CartInfo> cartInfoListByUserTempId=getCartListById(userTempId);
+        List<CartInfo> cartInfoListByUserTempId=getCartListByuserTempId(userTempId);
         //如果用户id为空，则返回临时id的数据
         if (StringUtils.isEmpty(userId)){
             return cartInfoListByUserTempId;
@@ -72,12 +86,39 @@ public class CartServiceImpl implements CartService {
         return cartInfoList;
     }
 
+    //我的想法是临时用户id的数据只放在缓存中，不放在数据库中
+    /*
+    * 获取临时用户的数据
+    * */
+    private List<CartInfo> getCartListByuserTempId(String userTempId) {
+        List<CartInfo> cartInfoList = new ArrayList<>();
+        if (StringUtils.isEmpty(userTempId)){
+            return cartInfoList;
+        }
+        String cartKey = getCartKey(userTempId);
+        if (redisTemplate.hasKey(cartKey)){
+            cartInfoList=redisTemplate.boundHashOps(cartKey).values();
+            //更新价格
+            cartInfoList.stream().forEach(cartInfo -> {
+                BigDecimal skuPrice = productFeignClient.getSkuPrice(cartInfo.getSkuId());
+                cartInfo.setSkuPrice(skuPrice);
+            });
+        }
+        return cartInfoList;
+    }
+
+    /*
+    * 设置购物项的勾选状态
+    * */
     @Override
-    public void checkCart(String userId, Long skuId, Integer isChecked) {
+    public void checkCart(String userId, Long skuId, Integer isChecked,Boolean isTempId) {
         String cartKey = getCartKey(userId);
         String skuIdS = String.valueOf(skuId);
-        //修改数据库
-        cartMapper.updateIscheckedByUserIdAndSkuId(userId,skuId,isChecked);
+        //如果是已登录用户，需要修改数据库
+        if (!isTempId) {
+            //修改数据库
+            cartMapper.updateIscheckedByUserIdAndSkuId(userId, skuId, isChecked);
+        }
         //修改缓存
         CartInfo cartInfo= (CartInfo) redisTemplate.boundHashOps(cartKey).get(skuIdS);
         cartInfo.setIsChecked(isChecked);
@@ -87,20 +128,26 @@ public class CartServiceImpl implements CartService {
         setCartKeyExpire(cartKey);
     }
 
+    /*
+    * 删除已登录用户或者临时用户的购物项
+    * */
     @Override
-    public void deleteCartByUserId(Long skuId, String userId) {
+    public void deleteCartItemByUserId(Long skuId,String userId,Boolean isTempId) {
         String skuIdS = String.valueOf(skuId);
         //获取缓存key
         String cartKey = getCartKey(userId);
         if (redisTemplate.hasKey(cartKey)) {
             redisTemplate.boundHashOps(cartKey).delete(skuIdS);
         }
-        cartMapper.deleteByUserIdAndSkuId(skuId,userId);
+        if (!isTempId){
+            cartMapper.deleteByUserIdAndSkuId(skuId,userId);
+        }
     }
 
     private List<CartInfo> merge(List<CartInfo> cartInfoListByUserTempId, String userId) {
         List<CartInfo> cartInfoList =  new ArrayList<>();
         List<CartInfo> cartInfoListByUserId= getCartListById(userId);
+        String userTempId=cartInfoListByUserTempId.get(0).getUserId();
         //获取redis中购物车的key
         String cartKey = getCartKey(userId);
         //将已登录用户的数据封装成map
@@ -119,7 +166,6 @@ public class CartServiceImpl implements CartService {
                 }
                 //更新价格
                 cartInfo1.setSkuPrice(skuPrice);
-                cartInfoList.add(cartInfo1);
                 //更新数据库
                 cartMapper.updateById(cartInfo1);
                 continue;
@@ -131,12 +177,12 @@ public class CartServiceImpl implements CartService {
             cartMapper.insert(cartInfo);
             cartInfoList.add(cartInfo);
         }
+        cartInfoList.addAll(cartInfoListByUserId);
         Map<String, CartInfo> cartInfoMap = cartInfoList.stream().collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId()+"", cartInfo -> cartInfo));
         //将合并后的数据放进缓存
         redisTemplate.boundHashOps(cartKey).putAll(cartInfoMap);
-        //删除临时id的缓存和数据库
-        deleteCart(cartInfoListByUserTempId.get(0).getUserId());
-
+        //删除临时id的缓存
+        deleteCartByUserId(userTempId,true);
         return cartInfoList;
     }
     /*
@@ -151,7 +197,7 @@ public class CartServiceImpl implements CartService {
         String cartKey = getCartKey(id);
         if (redisTemplate.hasKey(cartKey)){
             cartInfoList = redisTemplate.boundHashOps(cartKey).values();
-            // 购物车列表显示有顺序：按照商品的更新时间 降序
+//             购物车列表显示有顺序：按照商品的更新时间 降序
             cartInfoList.sort(new Comparator<CartInfo>() {
                 @Override
                 public int compare(CartInfo o1, CartInfo o2) {
@@ -183,21 +229,22 @@ public class CartServiceImpl implements CartService {
                 return cartInfo;
             }));
             redisTemplate.boundHashOps(cartKey).putAll(map);
-
-            return cartInfoList;
+            setCartKeyExpire(cartKey);
         }
         return cartInfoList;
     }
-    /**
-     * 删除购物车
-     * @param userTempId
-     */
-    public void deleteCart(String userTempId){
-        //先删数据库
-        Integer result=cartMapper.deleteByuserTempId(userTempId);
-        String cartKey = getCartKey(userTempId);
+
+
+    /*
+    * 删除购物车数据，isTemp判断是否是临时用户
+    * */
+    public void deleteCartByUserId(String userId,Boolean isTemp){
+        String cartKey = getCartKey(userId);
         if (redisTemplate.hasKey(cartKey)){
             redisTemplate.delete(cartKey);
+        }
+        if (!isTemp){
+            cartMapper.deleteByuserTempId(userId);
         }
     }
     // 设置过期时间

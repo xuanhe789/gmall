@@ -41,6 +41,7 @@ public class ItemServiceImpl implements ItemService {
                 listFeignClient.incrHotScore(skuId);
             }
         },threadPoolExecutor);
+        //异步获取skuinfo信息
         CompletableFuture<SkuInfo> skuInfoCompletableFuture = CompletableFuture.supplyAsync(new Supplier<SkuInfo>() {
             @Override
             public SkuInfo get() {
@@ -49,7 +50,7 @@ public class ItemServiceImpl implements ItemService {
                 return skuInfo;
             }
         }, threadPoolExecutor);
-
+        //在获取完skuinfo信息后，通过skuinfo的信息，异步获取sku图片信息。这两个异步有先后级关系
         CompletableFuture<Void> images = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
             @Override
             public void accept(SkuInfo skuInfo) {
@@ -57,7 +58,7 @@ public class ItemServiceImpl implements ItemService {
                 skuInfo.setSkuImageList(skuImages);
             }
         }, threadPoolExecutor);
-
+        //在获取完skuinfo信息后，通过skuinfo的信息，异步获取skuinfo对应的分类信息。这两个异步有先后级关系
         CompletableFuture<Void> categoryView = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
             @Override
             public void accept(SkuInfo skuInfo) {
@@ -65,6 +66,7 @@ public class ItemServiceImpl implements ItemService {
                 result.put("categoryView", baseCategoryView);
             }
         }, threadPoolExecutor);
+        //在获取完skuinfo信息后，通过skuinfo的信息，异步获取spu所有销售属性和值。这两个异步有先后级关系
         CompletableFuture<Void> spuSaleAttrList = skuInfoCompletableFuture.thenAcceptAsync(new Consumer<SkuInfo>() {
             @Override
             public void accept(SkuInfo skuInfo) {
@@ -79,6 +81,7 @@ public class ItemServiceImpl implements ItemService {
                 result.put("valuesSkuJson", JSONObject.toJSONString(skuValueMap));
             }
         }, threadPoolExecutor);
+        //异步获取sku的价格，这个不需要等待skuinfo信息
         CompletableFuture<Void> price = CompletableFuture.runAsync(new Runnable() {
             @Override
             public void run() {
@@ -86,6 +89,8 @@ public class ItemServiceImpl implements ItemService {
                 result.put("price", price);
             }
         }, threadPoolExecutor);
+        //下面这行代码的意思是等待下面所有的异步线程执行完毕，主线程才能执行下面代码，
+        // 也就是说下面的long end = System.currentTimeMillis();需要等待异步线程执行完毕才能执行
         CompletableFuture.allOf(skuInfoCompletableFuture,images,price,categoryView,valuesSkuJson,spuSaleAttrList).join();
         long end = System.currentTimeMillis();
         System.out.println("耗时:"+(end-start));
