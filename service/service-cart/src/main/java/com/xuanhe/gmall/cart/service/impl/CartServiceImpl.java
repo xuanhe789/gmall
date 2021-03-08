@@ -157,10 +157,22 @@ public class CartServiceImpl implements CartService {
             //
             if (!CollectionUtils.isEmpty(cartInfoList)) {
                 cartInfoList = cartInfoList.stream().filter(cartInfo -> cartInfo.getIsChecked() == 1).collect(Collectors.toList());
+                //验价格
+                cartInfoList.stream().forEach(cartInfo -> {
+                    BigDecimal skuPrice = productFeignClient.getSkuPrice(cartInfo.getSkuId());
+                    cartInfo.setSkuPrice(skuPrice);
+                });
                 return cartInfoList;
             }
         }else {
             cartInfoList=cartMapper.getCartListIsCheckedByUserId(userId);
+            //更新价格
+            if (!CollectionUtils.isEmpty(cartInfoList)){
+                cartInfoList.stream().forEach(cartInfo -> {
+                    BigDecimal skuPrice = productFeignClient.getSkuPrice(cartInfo.getSkuId());
+                    cartInfo.setSkuPrice(skuPrice);
+                });
+            }
         }
         return cartInfoList;
     }

@@ -30,6 +30,7 @@ import java.util.List;
 
 @Component
 public class AuthFilter implements GlobalFilter {
+    //需要登录才能访问的域名
     @Value("${authUrls.url}")
     private String authUrls;
     @Autowired
@@ -57,6 +58,7 @@ public class AuthFilter implements GlobalFilter {
         UserInfo userInfo=null;
         String token=getToken(request);
         if (!StringUtils.isEmpty(token)){
+                //单点登录，所有的token发送到user模块进行统一验证，cas单点登录
                 userInfo=userFeignClient.verify(token);
         }else {
             //设置临时Id
@@ -64,6 +66,7 @@ public class AuthFilter implements GlobalFilter {
             request = request.mutate().header("userTempId", userTempId).build();
             exchange = exchange.mutate().request(request).build();
         }
+        //如果用户未登录，无法访问以下这些接口
         if(antPathMatcher.match("/api/**/auth/**", path)) {
             if (userInfo==null){
                 return authErro(response,ResultCodeEnum.LOGIN_AUTH);

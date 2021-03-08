@@ -69,7 +69,7 @@ public class UserController {
      * @param userId
      * @return
      */
-    @GetMapping("inner/findUserAddressListByUserId/{userId}")
+    @GetMapping("/findUserAddressListByUserId/{userId}")
     public List<UserAddress> findUserAddressListByUserId(@PathVariable("userId") String userId){
         return userAddressService.findUserAddressListByUserId(userId);
     }
