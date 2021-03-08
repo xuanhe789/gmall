@@ -144,6 +144,37 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    /*
+    * 根据用户id获取用户已勾选的购物项
+    * */
+    @Override
+    public List<CartInfo> getCartCheckedList(String userId) {
+        List<CartInfo> cartInfoList=new ArrayList<>();
+        //先从缓存查询
+        String cartKey = getCartKey(userId);
+        if (redisTemplate.hasKey(cartKey)) {
+            cartInfoList = redisTemplate.boundHashOps(cartKey).values();
+            //
+            if (!CollectionUtils.isEmpty(cartInfoList)) {
+                cartInfoList = cartInfoList.stream().filter(cartInfo -> cartInfo.getIsChecked() == 1).collect(Collectors.toList());
+                return cartInfoList;
+            }
+        }else {
+            cartInfoList=cartMapper.getCartListIsCheckedByUserId(userId);
+        }
+        return cartInfoList;
+    }
+
+    @Override
+    public void deleteAllCart(String userId) {
+        //删除缓存
+        String cartKey = getCartKey(userId);
+        if (redisTemplate.hasKey(cartKey)){
+            redisTemplate.delete(cartKey);
+        }
+        cartMapper.deleteAllByUserId(userId);
+    }
+
     private List<CartInfo> merge(List<CartInfo> cartInfoListByUserTempId, String userId) {
         List<CartInfo> cartInfoList =  new ArrayList<>();
         List<CartInfo> cartInfoListByUserId= getCartListById(userId);

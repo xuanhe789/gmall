@@ -13,5 +13,7 @@ public interface CartService {
 
     void deleteCartItemByUserId(Long skuId, String userId, Boolean isTempId);
 
+    List<CartInfo> getCartCheckedList(String userId);
 
+    void deleteAllCart(String userId);
 }

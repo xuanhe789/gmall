@@ -46,10 +46,16 @@
     <delete id="deleteByUserIdAndSkuId">
         delete from cart_info where user_id=#{userId} and sku_id=#{skuId}
     </delete>
+    <delete id="deleteAllByUserId">
+        delete from cart_info where user_id=#{userId}
+    </delete>
     <select id="getCartInfoList" resultType="com.xuanhe.gmall.model.cart.CartInfo">
         select * from cart_info where user_id=#{id}
     </select>
     <select id="exist" resultType="com.xuanhe.gmall.model.cart.CartInfo">
         select * from cart_info where user_id=#{userId} and sku_id=#{skuId}
+    </select>
+    <select id="getCartListIsCheckedByUserId" resultType="com.xuanhe.gmall.model.cart.CartInfo">
+        select * from cart_info where user_id=#{userId} and is_checked=1
     </select>
 </mapper>

@@ -80,6 +80,21 @@ public class CartController {
         return Result.ok();
     }
 
+    /*
+    * 获取购物车已选中的购物项，用于生成订单
+    * */
+    @GetMapping("/getCartCheckedList/{userId}")
+    public List<CartInfo> getCartCheckedList(@PathVariable(value = "userId") String userId) {
+        return cartService.getCartCheckedList(userId);
+    }
+
+    //下完单后删除购物车数据
+    @GetMapping("/deleteAllCart/{userId}")
+    public Result<Boolean> deleteAllCart(@PathVariable("userId") String userId){
+        cartService.deleteAllCart(userId);
+        return Result.ok(true);
+    }
+
 //    public String getUserId(HttpServletRequest request) {
 //        //获取用户信息
 //        String userInfoString = request.getHeader("userInfo");

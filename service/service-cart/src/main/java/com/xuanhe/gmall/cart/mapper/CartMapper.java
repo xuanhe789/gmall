@@ -25,4 +25,8 @@ public interface CartMapper {
     CartInfo exist(@Param("skuId") Long skuId,@Param("userId") String userId);
 
     void insertALL(CartInfo cartInfo);
+
+    List<CartInfo> getCartListIsCheckedByUserId(String userId);
+
+    void deleteAllByUserId(String userId);
 }

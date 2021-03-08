@@ -2,7 +2,9 @@ package com.xuanhe.gmall.user.controller;
 
 import com.xuanhe.gmall.common.constant.RedisConst;
 import com.xuanhe.gmall.common.result.Result;
+import com.xuanhe.gmall.model.user.UserAddress;
 import com.xuanhe.gmall.model.user.UserInfo;
+import com.xuanhe.gmall.user.service.UserAddressService;
 import com.xuanhe.gmall.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +26,9 @@ public class UserController {
     UserService userService;
     @Autowired
     RedisTemplate redisTemplate;
+    @Autowired
+    UserAddressService userAddressService;
+
 
     @PostMapping("/login")
     public Result login(@RequestBody UserInfo userInfo){
@@ -58,4 +64,16 @@ public class UserController {
         return userInfo;
     }
 
+    /**
+     * 获取用户地址
+     * @param userId
+     * @return
+     */
+    @GetMapping("inner/findUserAddressListByUserId/{userId}")
+    public List<UserAddress> findUserAddressListByUserId(@PathVariable("userId") String userId){
+        return userAddressService.findUserAddressListByUserId(userId);
+    }
+
 }
+
+

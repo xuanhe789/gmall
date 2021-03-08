@@ -4,4 +4,7 @@
     <select id="login" resultType="com.xuanhe.gmall.model.user.UserInfo">
         select * from user_info where login_name=#{loginName} and passwd=#{passwd}
     </select>
+    <select id="findUserAddressListByUserId" resultType="com.xuanhe.gmall.model.user.UserAddress">
+        select * from user_address where user_id=#{userId}
+    </select>
 </mapper>
