@@ -3,11 +3,14 @@ package com.xuanhe.gmall.order.service.imp;
 import com.xuanhe.gmall.cart.feign.CartFeignClient;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.cart.CartInfo;
+import com.xuanhe.gmall.model.enums.OrderStatus;
+import com.xuanhe.gmall.model.enums.ProcessStatus;
 import com.xuanhe.gmall.model.order.OrderDetail;
 import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.model.user.UserAddress;
 import com.xuanhe.gmall.order.mapper.OrderMapper;
 import com.xuanhe.gmall.order.service.OrderService;
+import com.xuanhe.gmall.product.feign.ProductFeignClient;
 import com.xuanhe.gmall.user.feign.UserFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,6 +31,8 @@ public class OrderServiceImpl implements OrderService {
     CartFeignClient cartFeignClient;
     @Autowired
     RedisTemplate redisTemplate;
+    @Autowired
+    ProductFeignClient productFeignClient;
 
     @Override
     public String createTradeNo(String tokenUserId) {
@@ -78,6 +83,30 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Long saveOrderInfo(OrderInfo orderInfo) {
+        orderInfo.sumTotalAmount();
+        orderInfo.setOrderStatus(OrderStatus.UNPAID.getComment());
+        String outTradeNo = "GMALL"+ System.currentTimeMillis() + ""+ new Random().nextInt(1000);
+        //设置订单交易编号
+        orderInfo.setOutTradeNo(outTradeNo);
+        orderInfo.setCreateTime(new Date());
+        // 定义为1天
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, 1);
+        orderInfo.setExpireTime(calendar.getTime());
+        orderInfo.setProcessStatus(ProcessStatus.UNPAID.name());
+        List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
+        //验价格
+        orderDetailList.stream().forEach(orderDetail -> {
+            BigDecimal skuPrice = productFeignClient.getSkuPrice(orderDetail.getSkuId());
+            if (skuPrice.compareTo(orderDetail.getOrderPrice())!=0){
+                throw new RuntimeException("价格不符");
+            }
+        });
+        //订单存入数据库
+        orderMapper.saveOrderInfo(orderInfo);
+        //保存订单项
+        orderDetailList.stream().forEach(orderDetail -> orderDetail.setOrderId(orderInfo.getId()));
+        orderMapper.saveOrderDetailList(orderDetailList);
         return null;
     }
 

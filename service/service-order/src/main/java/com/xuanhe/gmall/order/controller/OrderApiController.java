@@ -27,8 +27,8 @@ public class OrderApiController {
     @GetMapping("/auth/trade")
     public Result<Map<String, Object>> trade(HttpServletRequest request) {
         String tokenUserId = getTokenUserId(request);
-        Map<String, Object> result =orderService.getTradeData(tokenUserId)
-        return null;
+        Map<String, Object> result =orderService.getTradeData(tokenUserId);
+        return Result.ok(result);
     }
 
     /**
@@ -41,6 +41,14 @@ public class OrderApiController {
     public Result submitOrder(@RequestBody OrderInfo orderInfo, HttpServletRequest request) {
         // 获取到用户Id
         String userId = getTokenUserId(request);
+        // 验证流水号
+        String tradeNo = request.getParameter("tradeNo");
+        Boolean checked = orderService.checkTradeNo(userId, orderInfo.getTrackingNo());
+        if (!checked){
+            Result<Object> fail = Result.fail();
+            fail.setMessage("流水号异常， 无法提交订单");
+            return fail;
+        }
         orderInfo.setUserId(Long.parseLong(userId));
         // 验证通过，保存订单！
         Long orderId = orderService.saveOrderInfo(orderInfo);
