@@ -43,7 +43,7 @@ public class OrderApiController {
         String userId = getTokenUserId(request);
         // 验证流水号
         String tradeNo = request.getParameter("tradeNo");
-        Boolean checked = orderService.checkTradeNo(userId, orderInfo.getTrackingNo());
+        Boolean checked = orderService.checkTradeNo(userId, tradeNo);
         if (!checked){
             Result<Object> fail = Result.fail();
             fail.setMessage("流水号异常， 无法提交订单");

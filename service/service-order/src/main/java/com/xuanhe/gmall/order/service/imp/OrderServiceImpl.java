@@ -62,6 +62,7 @@ public class OrderServiceImpl implements OrderService {
             orderDetail.setSkuName(cartInfo.getSkuName());
             orderDetail.setImgUrl(cartInfo.getImgUrl());
             orderDetail.setOrderPrice(cartInfo.getSkuPrice());
+            detailArrayList.add(orderDetail);
         });
         // 计算总金额
         OrderInfo orderInfo = new OrderInfo();
@@ -103,11 +104,16 @@ public class OrderServiceImpl implements OrderService {
             }
         });
         //订单存入数据库
-        orderMapper.saveOrderInfo(orderInfo);
+        orderMapper.insert(orderInfo);
         //保存订单项
         orderDetailList.stream().forEach(orderDetail -> orderDetail.setOrderId(orderInfo.getId()));
         orderMapper.saveOrderDetailList(orderDetailList);
-        return null;
+        //删除购物车
+        cartFeignClient.deleteAllCart(orderInfo.getUserId().toString());
+        //删除流水号
+        String tradeNoKey="user:"+ orderInfo.getUserId() + ":tradeCode";
+        redisTemplate.delete(tradeNoKey);
+        return orderInfo.getId();
     }
 
     /*
@@ -119,7 +125,6 @@ public class OrderServiceImpl implements OrderService {
         String tradeNoKey="user:"+ userId + ":tradeCode";
         String value= (String) redisTemplate.opsForValue().get(tradeNoKey);
         if (null!=value&&value.equals(tradeNo)){
-            redisTemplate.delete(tradeNoKey);
             return true;
         }else {
             return false;

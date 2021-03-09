@@ -60,7 +60,9 @@ public class AuthFilter implements GlobalFilter {
         if (!StringUtils.isEmpty(token)){
                 //单点登录，所有的token发送到user模块进行统一验证，cas单点登录
                 userInfo=userFeignClient.verify(token);
-        }else {
+        }
+        //如果有token，但是redis中已过期，则相当于没登陆，要设置临时id
+        if (userInfo==null){
             //设置临时Id
             String userTempId = getUserTempId(request);
             request = request.mutate().header("userTempId", userTempId).build();

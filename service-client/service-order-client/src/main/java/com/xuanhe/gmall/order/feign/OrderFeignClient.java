@@ -9,6 +9,6 @@ import java.util.Map;
 
 @FeignClient(value = "service-order")
 public interface OrderFeignClient {
-    @GetMapping("/auth/trade")
+    @GetMapping("/api/order/auth/trade")
     Result<Map<String, Object>> trade();
 }

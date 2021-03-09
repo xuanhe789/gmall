@@ -23,6 +23,6 @@ public interface CartFeignClient {
     List<CartInfo> getCartCheckedList(@PathVariable("userId") String userId);
 
     //下完单后删除购物车数据
-    @GetMapping("/deleteAllCart/{userId}")
+    @GetMapping("/api/cart/deleteAllCart/{userId}")
     public Result<Boolean> deleteAllCart(@PathVariable("userId") String userId);
 }
