@@ -130,4 +130,15 @@ public class OrderServiceImpl implements OrderService {
             return false;
         }
     }
+
+    @Override
+    public OrderInfo getOrderInfo(Long orderId) {
+        OrderInfo orderInfo=orderMapper.getOrderInfoById(orderId);
+        if (orderInfo==null){
+            return null;
+        }
+        List<OrderDetail> orderDetailList=orderMapper.getOrderDetailList(orderId);
+        orderInfo.setOrderDetailList(orderDetailList);
+        return orderInfo;
+    }
 }

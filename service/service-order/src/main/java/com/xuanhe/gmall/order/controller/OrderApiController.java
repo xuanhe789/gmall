@@ -55,6 +55,19 @@ public class OrderApiController {
         return Result.ok(orderId);
     }
 
+
+    /*
+    * 更加订单id获取订单信息
+    * */
+    @GetMapping("/getOrderInfo/{orderId}")
+    OrderInfo getOrderInfo(@PathVariable("orderId") Long orderId){
+        if (orderId==null){
+            return null;
+        }
+        OrderInfo orderInfo=orderService.getOrderInfo(orderId);
+        return orderInfo;
+    }
+
     public String getTokenUserId(HttpServletRequest request){
         //获取用户信息
         String userInfoString = request.getHeader("userInfo");

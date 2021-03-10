@@ -12,4 +12,6 @@ public interface OrderService {
     Long saveOrderInfo(OrderInfo orderInfo);
 
     public Boolean checkTradeNo(String userId,String tradeNo);
+
+    OrderInfo getOrderInfo(Long orderId);
 }

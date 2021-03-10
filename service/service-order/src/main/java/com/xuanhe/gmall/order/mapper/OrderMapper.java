@@ -11,4 +11,8 @@ import java.util.List;
 public interface OrderMapper extends BaseMapper<OrderInfo> {
 
     void saveOrderDetailList(List<OrderDetail> orderDetailList);
+
+    OrderInfo getOrderInfoById(Long orderId);
+
+    List<OrderDetail> getOrderDetailList(Long orderId);
 }
