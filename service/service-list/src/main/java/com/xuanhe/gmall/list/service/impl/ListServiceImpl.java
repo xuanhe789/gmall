@@ -76,11 +76,16 @@ public class ListServiceImpl implements ListService {
         }
     }
 
+    /*
+    * 搜索功能
+    * */
     @Override
     public SearchResponseVo search(SearchParam searchParam) throws IOException {
         //构建dsl语句
         SearchRequest searchRequest=buildDSL(searchParam);
+        //将dsl语句封装，传入es中查询，获取返回结果
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        //对返回结果进行解析
         SearchResponseVo responseVO = parseSearchResult(searchResponse);
         responseVO.setPageNo(searchParam.getPageNo());
         responseVO.setPageSize(searchParam.getPageSize());
@@ -90,6 +95,9 @@ public class ListServiceImpl implements ListService {
         return responseVO;
     }
 
+    /*
+    * 对搜索的返回结果进行解析
+    * */
     public SearchResponseVo parseSearchResult(SearchResponse searchResponse) {
         SearchResponseVo searchResponseVo = new SearchResponseVo();
         SearchHits hits = searchResponse.getHits();
@@ -150,7 +158,10 @@ public class ListServiceImpl implements ListService {
         return searchResponseVo;
     }
 
-    //制作dsl语句
+
+    /*
+    * 根据搜索参数制作DSL搜索语句
+    * */
     private SearchRequest buildDSL(SearchParam searchParam) {
         SearchSourceBuilder searchSourceBuilder=new SearchSourceBuilder();
         // 构建boolQueryBuilder
