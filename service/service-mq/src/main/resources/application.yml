@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: service-mq
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 47.115.74.81:8848

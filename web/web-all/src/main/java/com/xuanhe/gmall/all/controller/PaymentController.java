@@ -1,6 +1,4 @@
 package com.xuanhe.gmall.all.controller;
-
-import com.xuanhe.gmall.common.config.AlipayConfig;
 import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.order.feign.OrderFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,21 +27,12 @@ public class PaymentController {
         return "payment/pay";
     }
 
-    /**
-     * 支付宝回调
-     * @return
-     */
-    @RequestMapping("callback/return")
-    public String callBack() {
-        // 同步回调给用户展示信息
-        return "redirect:"+ AlipayConfig.return_order_url;
-    }
 
     /**
      * 支付成功页
      * @return
      */
-    @GetMapping("pay/success.html")
+    @GetMapping("/paySuccess")
     public String success() {
         return "payment/success";
     }

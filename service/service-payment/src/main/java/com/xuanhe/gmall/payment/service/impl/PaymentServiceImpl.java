@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.payment.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xuanhe.gmall.model.enums.PaymentStatus;
 import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.model.payment.PaymentInfo;
@@ -18,8 +19,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void savePaymentInfo(OrderInfo orderInfo, String paymentType) {
         Integer count=paymentMapper.selectByOrderIdAndPaymentType(orderInfo.getId(),paymentType);
-        if (count>0)
+        if (count>0) {
             return;
+        }
         PaymentInfo paymentInfo = new PaymentInfo();
         paymentInfo.setCreateTime(new Date());
         paymentInfo.setOrderId(orderInfo.getId());
@@ -30,5 +32,12 @@ public class PaymentServiceImpl implements PaymentService {
         //paymentInfo.setSubject("test");
         paymentInfo.setTotalAmount(orderInfo.getTotalAmount());
         paymentMapper.insert(paymentInfo);
+    }
+
+    @Override
+    public void updatePayment(PaymentInfo paymentInfo) {
+        QueryWrapper<PaymentInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("out_trade_no",paymentInfo.getOutTradeNo());
+        paymentMapper.update(paymentInfo,queryWrapper);
     }
 }
