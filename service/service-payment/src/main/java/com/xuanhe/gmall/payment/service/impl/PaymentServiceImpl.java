@@ -6,15 +6,21 @@ import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.model.payment.PaymentInfo;
 import com.xuanhe.gmall.payment.mapper.PaymentMapper;
 import com.xuanhe.gmall.payment.service.PaymentService;
+import com.xuanhe.gmall.rabbit.constant.MqConst;
+import com.xuanhe.gmall.rabbit.service.RabbitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
     @Autowired
     PaymentMapper paymentMapper;
+    @Autowired
+    RabbitService rabbitService;
 
     @Override
     public void savePaymentInfo(OrderInfo orderInfo, String paymentType) {
@@ -39,5 +45,14 @@ public class PaymentServiceImpl implements PaymentService {
         QueryWrapper<PaymentInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("out_trade_no",paymentInfo.getOutTradeNo());
         paymentMapper.update(paymentInfo,queryWrapper);
+    }
+
+    @Override
+    public void sendMessageQuery(String outTradeNo, Integer count,long delayTime) {
+        System.out.println("发送检查队列");
+        Map<String,Object> map=new HashMap<>();
+        map.put("put_trade_no",outTradeNo);
+        map.put("count",count);
+        rabbitService.sendDelayMessage(MqConst.EXCHANGE_DIRECT_PAYMENT_PAY,MqConst.ROUTING_PAYMENT_PAY,map,delayTime);
     }
 }

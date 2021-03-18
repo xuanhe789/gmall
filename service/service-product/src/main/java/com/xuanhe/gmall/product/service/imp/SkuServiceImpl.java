@@ -8,6 +8,8 @@ import com.xuanhe.gmall.model.product.*;
 import com.xuanhe.gmall.product.mapper.SkuMapper;
 import com.xuanhe.gmall.product.mapper.SpuMapper;
 import com.xuanhe.gmall.product.service.SkuService;
+import com.xuanhe.gmall.rabbit.constant.MqConst;
+import com.xuanhe.gmall.rabbit.service.RabbitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.Map;
 
 @Service
 public class SkuServiceImpl implements SkuService {
+    @Autowired
+    RabbitService rabbitService;
     @Autowired
     RedisTemplate redisTemplate;
     @Autowired
@@ -59,14 +63,14 @@ public class SkuServiceImpl implements SkuService {
     @Override
     public boolean onSale(Long skuId) {
         Integer integer=skuMapper.onSale(skuId);
-        listFeignClient.onsale(skuId);
+        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_GOODS,MqConst.ROUTING_GOODS_UPPER,skuId);
         return true;
     }
 
     @Override
     public boolean upSale(Long skuId) {
         Integer result=skuMapper.upSale(skuId);
-        listFeignClient.cancelSale(skuId);
+        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_GOODS,MqConst.ROUTING_GOODS_LOWER,skuId);
         return true;
     }
 

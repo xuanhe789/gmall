@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.order.service.imp;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xuanhe.gmall.cart.feign.CartFeignClient;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.cart.CartInfo;
@@ -11,6 +12,8 @@ import com.xuanhe.gmall.model.user.UserAddress;
 import com.xuanhe.gmall.order.mapper.OrderMapper;
 import com.xuanhe.gmall.order.service.OrderService;
 import com.xuanhe.gmall.product.feign.ProductFeignClient;
+import com.xuanhe.gmall.rabbit.constant.MqConst;
+import com.xuanhe.gmall.rabbit.service.RabbitService;
 import com.xuanhe.gmall.user.feign.UserFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -33,6 +36,8 @@ public class OrderServiceImpl implements OrderService {
     RedisTemplate redisTemplate;
     @Autowired
     ProductFeignClient productFeignClient;
+    @Autowired
+    RabbitService rabbitService;
 
     @Override
     public String createTradeNo(String tokenUserId) {
@@ -85,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Long saveOrderInfo(OrderInfo orderInfo) {
         orderInfo.sumTotalAmount();
-        orderInfo.setOrderStatus(OrderStatus.UNPAID.getComment());
+        orderInfo.setOrderStatus(OrderStatus.UNPAID.name());
         String outTradeNo = "GMALL"+ System.currentTimeMillis() + ""+ new Random().nextInt(1000);
         //设置订单交易编号
         orderInfo.setOutTradeNo(outTradeNo);
@@ -113,6 +118,8 @@ public class OrderServiceImpl implements OrderService {
         //删除流水号
         String tradeNoKey="user:"+ orderInfo.getUserId() + ":tradeCode";
         redisTemplate.delete(tradeNoKey);
+        //发送订单Id到延迟队列，超时删除订单
+        rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_ORDER_CANCEL, orderInfo.getId(), 30L);
         return orderInfo.getId();
     }
 
@@ -140,5 +147,17 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList=orderMapper.getOrderDetailList(orderId);
         orderInfo.setOrderDetailList(orderDetailList);
         return orderInfo;
+    }
+
+    @Override
+    public OrderInfo getById(Long orderId) {
+        return orderMapper.getOrderInfoById(orderId);
+    }
+
+    @Override
+    public void deleteOrder(Long orderId) {
+        QueryWrapper queryWrapper=new QueryWrapper();
+        queryWrapper.eq("id",orderId);
+        orderMapper.delete(queryWrapper);
     }
 }

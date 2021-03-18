@@ -7,9 +7,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import java.io.IOException;
 
 public interface ListService {
-    void onSale(Long skuId);
+//    void onSale(Long skuId);
 
-    void cancelSale(Long skuId);
+//    void cancelSale(Long skuId);
 
     void incrHotScore(Long skuId);
 

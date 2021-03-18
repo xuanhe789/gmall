@@ -56,4 +56,27 @@ public class AlipayServiceImpl implements AlipayService {
         String body = alipayTradePagePayResponse.getBody();
         return body;
     }
+
+    @Override
+    public Map<String, Object> queryStatus(String outTradeNo) {
+        AlipayTradeQueryRequest alipayTradeQueryRequest = new AlipayTradeQueryRequest();
+        Map<String,Object> map= new HashMap<>();
+        map.put("out_trade_no",outTradeNo);
+        alipayTradeQueryRequest.setBizContent(JSONObject.toJSONString(map));
+        AlipayTradeQueryResponse response=null;
+        try {
+            response=alipayClient.execute(alipayTradeQueryRequest);
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+        }
+        Map<String, Object> result = new HashMap<>();
+        if (response.isSuccess()){
+            System.out.println("查询接口调用成功");
+            String tradeStatus=response.getTradeStatus();
+            result.put("trade_status",tradeStatus);
+        }else {
+            System.out.println("调用失败");
+        }
+        return result;
+    }
 }

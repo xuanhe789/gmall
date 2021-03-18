@@ -22,6 +22,11 @@
             <artifactId>alipay-sdk-java</artifactId>
             <version>4.8.73.ALL</version>
         </dependency>
+        <dependency>
+            <groupId>com.xuanhe.gmall</groupId>
+            <artifactId>rabbit-util</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>

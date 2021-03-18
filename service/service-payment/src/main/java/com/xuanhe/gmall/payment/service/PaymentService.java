@@ -8,4 +8,6 @@ public interface PaymentService {
     void savePaymentInfo(OrderInfo orderInfo, String paymentType);
 
     void updatePayment(PaymentInfo paymentInfo);
+
+    void sendMessageQuery(String outTradeNo, Integer count,long delayTime);
 }

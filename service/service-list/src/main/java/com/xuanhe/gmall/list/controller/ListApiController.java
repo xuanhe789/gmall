@@ -26,17 +26,17 @@ public class ListApiController {
         elasticsearchRestTemplate.putMapping(Goods.class);
         return Result.ok();
     }
-    @GetMapping("/onSale/{skuId}")
-    public Result onsale(@PathVariable("skuId") Long skuId){
-        listService.onSale(skuId);
-        return Result.ok();
-    }
-
-    @GetMapping("/cancelSale/{skuId}")
-    public Result cancelSale(@PathVariable("skuId") Long skuId){
-        listService.cancelSale(skuId);
-        return Result.ok();
-    }
+//    @GetMapping("/onSale/{skuId}")
+//    public Result onsale(@PathVariable("skuId") Long skuId){
+//        listService.onSale(skuId);
+//        return Result.ok();
+//    }
+//
+//    @GetMapping("/cancelSale/{skuId}")
+//    public Result cancelSale(@PathVariable("skuId") Long skuId){
+//        listService.cancelSale(skuId);
+//        return Result.ok();
+//    }
 
     @GetMapping("/incrHotScore/{skuId}")
     public Result incrHotScore(@PathVariable("skuId") Long skuId){

@@ -52,17 +52,17 @@ public class ListServiceImpl implements ListService {
     @Autowired
     RestHighLevelClient restHighLevelClient;
 
-    @Override
-    public void onSale(Long skuId) {
-        Goods goods=productFeignClient.getGoodsBySkuId(skuId);
-        goodsRespository.save(goods);
-    }
-
-    @Override
-    public void cancelSale(Long skuId) {
+//    @Override
+//    public void onSale(Long skuId) {
 //        Goods goods=productFeignClient.getGoodsBySkuId(skuId);
-        goodsRespository.deleteById(skuId);
-    }
+//        goodsRespository.save(goods);
+//    }
+//
+//    @Override
+//    public void cancelSale(Long skuId) {
+////        Goods goods=productFeignClient.getGoodsBySkuId(skuId);
+//        goodsRespository.deleteById(skuId);
+//    }
 
     @Override
     public void incrHotScore(Long skuId) {

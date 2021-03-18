@@ -14,4 +14,8 @@ public interface OrderService {
     public Boolean checkTradeNo(String userId,String tradeNo);
 
     OrderInfo getOrderInfo(Long orderId);
+
+    OrderInfo getById(Long orderId);
+
+    void deleteOrder(Long orderId);
 }
