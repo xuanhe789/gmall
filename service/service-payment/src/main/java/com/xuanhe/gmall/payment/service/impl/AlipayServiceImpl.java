@@ -69,8 +69,9 @@ public class AlipayServiceImpl implements AlipayService {
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = null;
         if (response.isSuccess()){
+            result = new HashMap<>();
             System.out.println("查询接口调用成功");
             String tradeStatus=response.getTradeStatus();
             result.put("trade_status",tradeStatus);

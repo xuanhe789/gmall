@@ -67,6 +67,21 @@ public class OrderApiController {
         OrderInfo orderInfo=orderService.getOrderInfo(orderId);
         return orderInfo;
     }
+    @GetMapping("/getOrderInfoByOutTradeNo/{outTradeNo}")
+    OrderInfo getOrderInfoByOutTradeNo(@PathVariable("outTradeNo") String outTradeNo){
+        if (outTradeNo==null){
+            return null;
+        }
+        OrderInfo orderInfo=orderService.getOrderInfoByOutTradeNo(outTradeNo);
+        return orderInfo;
+    }
+
+    @PostMapping("/update")
+    void updateByOutTradeNo(@RequestBody OrderInfo orderInfo){
+        if (orderInfo!=null){
+            orderService.update(orderInfo);
+        }
+    }
 
     public String getTokenUserId(HttpServletRequest request){
         //获取用户信息

@@ -1,9 +1,11 @@
 package com.xuanhe.gmall.payment.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.xuanhe.gmall.model.enums.OrderStatus;
 import com.xuanhe.gmall.model.enums.PaymentStatus;
 import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.model.payment.PaymentInfo;
+import com.xuanhe.gmall.order.feign.OrderFeignClient;
 import com.xuanhe.gmall.payment.mapper.PaymentMapper;
 import com.xuanhe.gmall.payment.service.PaymentService;
 import com.xuanhe.gmall.rabbit.constant.MqConst;
@@ -21,6 +23,8 @@ public class PaymentServiceImpl implements PaymentService {
     PaymentMapper paymentMapper;
     @Autowired
     RabbitService rabbitService;
+    @Autowired
+    OrderFeignClient orderFeignClient;
 
     @Override
     public void savePaymentInfo(OrderInfo orderInfo, String paymentType) {
@@ -51,8 +55,20 @@ public class PaymentServiceImpl implements PaymentService {
     public void sendMessageQuery(String outTradeNo, Integer count,long delayTime) {
         System.out.println("发送检查队列");
         Map<String,Object> map=new HashMap<>();
-        map.put("put_trade_no",outTradeNo);
+        map.put("out_trade_no",outTradeNo);
         map.put("count",count);
+        map.put("delayTime",delayTime);
         rabbitService.sendDelayMessage(MqConst.EXCHANGE_DIRECT_PAYMENT_PAY,MqConst.ROUTING_PAYMENT_PAY,map,delayTime);
+    }
+
+    @Override
+    public void updateStatusByOutTradeNo(String out_trade_no) {
+        //修改支付表的支付状态
+        paymentMapper.updateStatus(out_trade_no,PaymentStatus.PAID.name());
+        //修改订单表的支付状态
+        OrderInfo orderInfo = orderFeignClient.getOrderInfoByOutTradeNo(out_trade_no);
+        orderInfo.setOrderStatus(OrderStatus.PAID.name());
+        orderInfo.setProcessStatus(PaymentStatus.PAID.name());
+        orderFeignClient.updateByOutTradeNo(orderInfo);
     }
 }

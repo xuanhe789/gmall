@@ -53,4 +53,18 @@ public class RabbitConfig {
         return BindingBuilder.bind(upperQueue()).to(directExchange()).with(MqConst.ROUTING_GOODS_UPPER);
     }
 
+    @Bean
+    public DirectExchange paymentExchange(){
+        return new DirectExchange(MqConst.EXCHANGE_DIRECT_PAYMENT_PAY,true,false);
+    }
+
+    @Bean
+    public Queue payQueue(){
+        return new Queue(MqConst.QUEUE_PAYMENT_PAY,true,false,false);
+    }
+
+    @Bean
+    public Binding payment(){
+        return BindingBuilder.bind(payQueue()).to(paymentExchange()).with(MqConst.ROUTING_PAYMENT_PAY);
+    }
 }

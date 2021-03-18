@@ -29,10 +29,11 @@ spring:
   rabbitmq:
     host: 47.115.74.81
     port: 5672
-    username: guest
-    password: guest
+    username: xuanhe
+    password: 123456
     publisher-confirms: true
     publisher-returns: true
+    virtual-host: /xuanhe
     listener:
       simple:
         cknowledge-mode: manual #默认情况下消息消费者是自动确认消息的，如果要手动确认消息则需要修改确认模式为manual

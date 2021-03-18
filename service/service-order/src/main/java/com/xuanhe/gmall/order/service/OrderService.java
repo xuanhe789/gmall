@@ -18,4 +18,8 @@ public interface OrderService {
     OrderInfo getById(Long orderId);
 
     void deleteOrder(Long orderId);
+
+    OrderInfo getOrderInfoByOutTradeNo(String outTradeNo);
+
+    void update(OrderInfo orderInfo);
 }

@@ -39,7 +39,7 @@ public class PaymentApiController {
         String alipay = alipayService.createAlipay(orderId);
         //生成支付页面时，开始查询订单的支付情况
         OrderInfo orderInfo = orderFeignClient.getOrderInfo(orderId);
-        paymentService.sendMessageQuery(orderInfo.getOutTradeNo(),6);
+        paymentService.sendMessageQuery(orderInfo.getOutTradeNo(),0,30);
         return alipay;
     }
 

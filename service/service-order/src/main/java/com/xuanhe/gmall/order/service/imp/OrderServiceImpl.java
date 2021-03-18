@@ -119,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
         String tradeNoKey="user:"+ orderInfo.getUserId() + ":tradeCode";
         redisTemplate.delete(tradeNoKey);
         //发送订单Id到延迟队列，超时删除订单
-        rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_ORDER_CANCEL, orderInfo.getId(), 30L);
+        rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_ORDER_CANCEL, orderInfo.getId(), 7200L);
         return orderInfo.getId();
     }
 
@@ -159,5 +159,18 @@ public class OrderServiceImpl implements OrderService {
         QueryWrapper queryWrapper=new QueryWrapper();
         queryWrapper.eq("id",orderId);
         orderMapper.delete(queryWrapper);
+    }
+
+    @Override
+    public OrderInfo getOrderInfoByOutTradeNo(String outTradeNo) {
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("out_trade_no",outTradeNo);
+        OrderInfo orderInfo = orderMapper.selectOne(queryWrapper);
+        return orderInfo;
+    }
+
+    @Override
+    public void update(OrderInfo orderInfo) {
+        orderMapper.updateById(orderInfo);
     }
 }

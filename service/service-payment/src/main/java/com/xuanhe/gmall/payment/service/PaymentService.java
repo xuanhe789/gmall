@@ -10,4 +10,6 @@ public interface PaymentService {
     void updatePayment(PaymentInfo paymentInfo);
 
     void sendMessageQuery(String outTradeNo, Integer count,long delayTime);
+
+    void updateStatusByOutTradeNo(String out_trade_no);
 }
