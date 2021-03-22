@@ -1,14 +1,19 @@
 package com.xuanhe.gmall.order.service.imp;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xuanhe.gmall.cart.feign.CartFeignClient;
 import com.xuanhe.gmall.common.result.Result;
+import com.xuanhe.gmall.common.util.HttpClientUtil;
 import com.xuanhe.gmall.model.cart.CartInfo;
 import com.xuanhe.gmall.model.enums.OrderStatus;
+import com.xuanhe.gmall.model.enums.PaymentWay;
 import com.xuanhe.gmall.model.enums.ProcessStatus;
 import com.xuanhe.gmall.model.order.OrderDetail;
 import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.model.user.UserAddress;
+import com.xuanhe.gmall.order.bean.WareOrderTask;
+import com.xuanhe.gmall.order.bean.WareOrderTaskDetail;
 import com.xuanhe.gmall.order.mapper.OrderMapper;
 import com.xuanhe.gmall.order.service.OrderService;
 import com.xuanhe.gmall.product.feign.ProductFeignClient;
@@ -16,6 +21,7 @@ import com.xuanhe.gmall.rabbit.constant.MqConst;
 import com.xuanhe.gmall.rabbit.service.RabbitService;
 import com.xuanhe.gmall.user.feign.UserFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +32,8 @@ import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+    @Value("$(ware.url)")
+    private String WARE_URL;
     @Autowired
     OrderMapper orderMapper;
     @Autowired
@@ -69,6 +77,7 @@ public class OrderServiceImpl implements OrderService {
             orderDetail.setOrderPrice(cartInfo.getSkuPrice());
             detailArrayList.add(orderDetail);
         });
+
         // 计算总金额
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setOrderDetailList(detailArrayList);
@@ -108,6 +117,16 @@ public class OrderServiceImpl implements OrderService {
                 throw new RuntimeException("价格不符");
             }
         });
+        //验库存
+        for (OrderDetail orderDetail : orderDetailList) {
+            Integer skuNum = orderDetail.getSkuNum();
+            Long skuId = orderDetail.getSkuId();
+            String result = HttpClientUtil.doGet(WARE_URL + "/hasStock?skuId=" + skuId + "&num=" + skuNum);
+            if ("0".equals(result)){
+                String skuName = orderDetail.getSkuName();
+                throw new RuntimeException(skuName+"  库存不足！");
+            }
+        }
         //订单存入数据库
         orderMapper.insert(orderInfo);
         //保存订单项
@@ -118,6 +137,25 @@ public class OrderServiceImpl implements OrderService {
         //删除流水号
         String tradeNoKey="user:"+ orderInfo.getUserId() + ":tradeCode";
         redisTemplate.delete(tradeNoKey);
+        //将库存信息发送到消息队列，库存系统锁定库存
+        WareOrderTask wareOrderTask = new WareOrderTask();
+        List<WareOrderTaskDetail> orderTaskDetails = new ArrayList<>();
+        for (OrderDetail orderDetail : orderDetailList) {
+            WareOrderTaskDetail wareOrderTaskDetail = new WareOrderTaskDetail();
+            wareOrderTaskDetail.setSkuId(orderDetail.getSkuId()+"");
+            wareOrderTaskDetail.setSkuNum(orderDetail.getSkuNum());
+            wareOrderTaskDetail.setSkuName(orderDetail.getSkuName());
+            orderTaskDetails.add(wareOrderTaskDetail);
+        }
+
+        wareOrderTask.setDetails(orderTaskDetails);
+        wareOrderTask.setOrderId(orderInfo.getId()+"");
+        wareOrderTask.setConsignee(orderInfo.getConsignee());
+        wareOrderTask.setConsigneeTel(orderInfo.getConsigneeTel());
+        wareOrderTask.setCreateTime(new Date());
+        wareOrderTask.setPaymentWay(PaymentWay.ONLINE.getComment());
+        wareOrderTask.setDeliveryAddress(orderInfo.getDeliveryAddress());
+        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_WARE_STOCK,MqConst.ROUTING_WARE_STOCK, JSONObject.toJSONString(wareOrderTask));
         //发送订单Id到延迟队列，超时删除订单
         rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_ORDER_CANCEL, orderInfo.getId(), 7200L);
         return orderInfo.getId();

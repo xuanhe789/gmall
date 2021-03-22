@@ -7,9 +7,11 @@ public interface PaymentService {
 
     void savePaymentInfo(OrderInfo orderInfo, String paymentType);
 
-    void updatePayment(PaymentInfo paymentInfo);
+    void paySucess(PaymentInfo paymentInfo);
 
     void sendMessageQuery(String outTradeNo, Integer count,long delayTime);
 
     void updateStatusByOutTradeNo(String out_trade_no);
+
+    void updateStatus(String outTradeNo, String status);
 }

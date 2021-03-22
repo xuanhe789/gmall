@@ -32,7 +32,7 @@ public class PaymentConsumer {
                 //获取支付订单的状态
                 Map map1 = alipayService.queryStatus(out_trade_no);
                 //若还是创建未支付状态，则继续查询
-                if (map1 == null && map1.get("trade_status").equals("WAIT_BUYER_PAY")) {
+                if (map1 == null || map1.get("trade_status").equals("WAIT_BUYER_PAY")) {
                     System.out.println("订单未支付且查询次数未超过6");
                     paymentService.sendMessageQuery(out_trade_no, ++count, delayTime * 3);
                 } else {
