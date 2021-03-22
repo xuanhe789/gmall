@@ -1,5 +1,6 @@
 package com.xuanhe.gmall.payment.service.impl;
 
+import com.alipay.api.request.AlipayTradeRefundRequest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xuanhe.gmall.model.enums.OrderStatus;
 import com.xuanhe.gmall.model.enums.PaymentStatus;
@@ -45,10 +46,15 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void updatePayment(PaymentInfo paymentInfo) {
+    public void paySucess(PaymentInfo paymentInfo) {
         QueryWrapper<PaymentInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("out_trade_no",paymentInfo.getOutTradeNo());
         paymentMapper.update(paymentInfo,queryWrapper);
+        //修改订单表的支付状态
+        OrderInfo orderInfo = orderFeignClient.getOrderInfoByOutTradeNo(paymentInfo.getOutTradeNo());
+        orderInfo.setOrderStatus(OrderStatus.PAID.name());
+        orderInfo.setProcessStatus(PaymentStatus.PAID.name());
+        orderFeignClient.updateByOutTradeNo(orderInfo);
     }
 
     @Override
@@ -58,7 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
         map.put("out_trade_no",outTradeNo);
         map.put("count",count);
         map.put("delayTime",delayTime);
-        rabbitService.sendDelayMessage(MqConst.EXCHANGE_DIRECT_PAYMENT_PAY,MqConst.ROUTING_PAYMENT_PAY,map,delayTime);
+        rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_PAYMENT_PAY,map,delayTime);
     }
 
     @Override
@@ -71,4 +77,11 @@ public class PaymentServiceImpl implements PaymentService {
         orderInfo.setProcessStatus(PaymentStatus.PAID.name());
         orderFeignClient.updateByOutTradeNo(orderInfo);
     }
+
+    @Override
+    public void updateStatus(String outTradeNo, String status) {
+        paymentMapper.closePayMent(outTradeNo,status);
+    }
+
+
 }

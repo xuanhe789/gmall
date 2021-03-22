@@ -65,6 +65,6 @@ public class RabbitConfig {
 
     @Bean
     public Binding payment(){
-        return BindingBuilder.bind(payQueue()).to(paymentExchange()).with(MqConst.ROUTING_PAYMENT_PAY);
+        return BindingBuilder.bind(payQueue()).to(delayExchange()).with(MqConst.ROUTING_PAYMENT_PAY).noargs();
     }
 }

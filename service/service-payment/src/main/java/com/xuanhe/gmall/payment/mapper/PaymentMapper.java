@@ -10,4 +10,6 @@ public interface PaymentMapper extends BaseMapper<PaymentInfo> {
     Integer selectByOrderIdAndPaymentType(@Param("orderId") Long id,@Param("paymentType") String paymentType);
 
     void updateStatus(@Param("out_trade_no") String out_trade_no,@Param("status") String name);
+
+    void closePayMent(@Param("outTradeNo") String outTradeNo,@Param("status") String status);
 }

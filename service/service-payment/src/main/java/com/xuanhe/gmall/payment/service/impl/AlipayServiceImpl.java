@@ -6,10 +6,15 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradePayRequest;
 import com.alipay.api.request.AlipayTradeQueryRequest;
+import com.alipay.api.request.AlipayTradeRefundRequest;
 import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
+import com.alipay.api.response.AlipayTradeRefundResponse;
+import com.xuanhe.gmall.model.enums.OrderStatus;
+import com.xuanhe.gmall.model.enums.PaymentStatus;
 import com.xuanhe.gmall.model.enums.PaymentType;
 import com.xuanhe.gmall.model.order.OrderInfo;
+import com.xuanhe.gmall.model.payment.PaymentInfo;
 import com.xuanhe.gmall.order.feign.OrderFeignClient;
 import com.xuanhe.gmall.payment.config.AlipayConfig;
 import com.xuanhe.gmall.payment.service.AlipayService;
@@ -79,5 +84,33 @@ public class AlipayServiceImpl implements AlipayService {
             System.out.println("调用失败");
         }
         return result;
+    }
+
+    @Override
+    public boolean closePay(Long orderId) throws AlipayApiException {
+        OrderInfo orderInfo = orderFeignClient.getOrderInfo(orderId);
+        if (orderInfo==null||!orderInfo.getOrderStatus().equals(OrderStatus.PAID.name())){
+            return false;
+        }
+        AlipayTradeRefundRequest alipayTradeRefundRequest = new AlipayTradeRefundRequest();
+        Map<Object, Object> map = new HashMap<>();
+        map.put("out_trade_no",orderInfo.getOutTradeNo());
+        map.put("refund_amount",new BigDecimal("0.01"));
+        alipayTradeRefundRequest.setBizContent(JSONObject.toJSONString(map));
+        AlipayTradeRefundResponse response = null;
+        try {
+            response = alipayClient.execute(alipayTradeRefundRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (response.isSuccess()&&response.getMsg().equals("Success")) {
+            // 更新交易记录 ： 关闭
+            paymentService.updateStatus(orderInfo.getOutTradeNo(), PaymentStatus.ClOSED.name());
+            orderInfo.setOrderStatus(OrderStatus.CLOSED.name());
+            orderFeignClient.updateByOutTradeNo(orderInfo);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
