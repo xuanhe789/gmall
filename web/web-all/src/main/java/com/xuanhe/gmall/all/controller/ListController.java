@@ -12,8 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +28,25 @@ public class ListController {
     ItemFeignClient itemFeignClient;
     @Autowired
     ListFeignClient listFeignClient;
-    @GetMapping("index.html")
+    @Autowired
+    SpringTemplateEngine templateEngine;
+    @GetMapping(value = {"index.html",""})
     public String index(){
-        List<JSONObject> jsonObjects=itemFeignClient.getCategoryList();
         return "index";
+    }
+
+    /*
+    * 生成静态页面
+    * */
+    @GetMapping("createHTML")
+    @ResponseBody
+    public Result createHTML() throws Exception{
+        List<JSONObject> categoryList = itemFeignClient.getCategoryList();
+        Context context=new Context();
+        context.setVariable("list",categoryList);
+        FileWriter write = new FileWriter("D:\\index.html");
+        templateEngine.process("index/index.html",context,write);
+        return Result.ok();
     }
 
     @GetMapping({"list.html","search.html"})
