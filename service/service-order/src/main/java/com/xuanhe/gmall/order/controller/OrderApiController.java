@@ -83,6 +83,32 @@ public class OrderApiController {
         }
     }
 
+    @GetMapping("/getTradeNo/{userId}")
+    public String getTradeNo(@PathVariable("userId") String userId){
+        return orderService.createTradeNo(userId);
+    }
+
+    /**
+     * 提交秒杀订单
+     * @param orderInfo
+     * @return
+     */
+    @PostMapping("/auth/submitSeckillOrder/{tradeNo}")
+    public Result<String> submitSeckillOrder(@RequestBody OrderInfo orderInfo, @PathVariable("tradeNo") String tradeNo) {
+        // 验证流水号
+        Boolean checked = orderService.checkTradeNo(orderInfo.getUserId()+"", tradeNo);
+        if (!checked){
+            Result<String> fail = Result.fail();
+            fail.setMessage("流水号异常， 无法提交订单");
+            return fail;
+        }
+        // 验证通过，保存订单！
+        Long orderId = orderService.saveSeckillOrderInfo(orderInfo);
+        return Result.ok(orderId+"");
+    }
+
+
+
     public String getTokenUserId(HttpServletRequest request){
         //获取用户信息
         String userInfoString = request.getHeader("userInfo");

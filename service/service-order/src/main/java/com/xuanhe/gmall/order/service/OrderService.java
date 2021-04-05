@@ -22,4 +22,6 @@ public interface OrderService {
     OrderInfo getOrderInfoByOutTradeNo(String outTradeNo);
 
     void update(OrderInfo orderInfo);
+
+    Long saveSeckillOrderInfo(OrderInfo orderInfo);
 }

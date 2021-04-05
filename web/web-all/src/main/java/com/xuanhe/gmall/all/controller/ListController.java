@@ -50,7 +50,7 @@ public class ListController {
     }
 
     @GetMapping({"list.html","search.html"})
-    public String list(SearchParam searchParam, Model model, HttpServletRequest request){
+    public String list(SearchParam searchParam, Model model){
         Result<Map> list = listFeignClient.list(searchParam);
         Map data = list.getData();
         String urlParam = UrlParamUtils.getUrlParam(searchParam);

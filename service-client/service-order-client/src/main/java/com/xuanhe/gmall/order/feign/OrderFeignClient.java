@@ -24,4 +24,10 @@ public interface OrderFeignClient {
 
     @PostMapping("/api/order/update")
     void updateByOutTradeNo(@RequestBody OrderInfo orderInfo);
+
+    @GetMapping("/api/order/getTradeNo/{userId}")
+    String getTradeNo(@PathVariable("userId") String userId);
+
+    @PostMapping("/api/order/auth/submitSeckillOrder/{tradeNo}")
+    Result<String> submitSeckillOrder(@RequestBody OrderInfo orderInfo, @PathVariable("tradeNo") String tradeNo);
 }

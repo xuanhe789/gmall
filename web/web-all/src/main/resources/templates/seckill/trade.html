@@ -293,13 +293,14 @@
 <!--页面底部END-->
 <!--页面底部END-->
 <script src="/js/api/seckill.js"></script>
+<script src="/js/api/trade.js"></script>
 <script th:inline="javascript">
 	var item = new Vue({
 		el: '#item',
 
 		data: {
             userAddressList: [[${userAddressList}]],
-
+			tradeNo: [[${tradeNo}]],
             order: {
                 consignee:'',
                 consigneeTel: '',
@@ -329,7 +330,7 @@
             },
 
             submitOrder() {
-                seckill.submitOrder(this.order).then(response => {
+                seckill.submitOrder(this.order,this.tradeNo).then(response => {
                     debugger
                     if (response.data.code == 200) {
 						window.location.href = 'http://payment.gmall.com/pay.html?orderId=' + response.data.data

@@ -110,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
         orderInfo.setExpireTime(calendar.getTime());
         orderInfo.setProcessStatus(ProcessStatus.UNPAID.name());
         List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
-        //验价格
+//        验价格
         orderDetailList.stream().forEach(orderDetail -> {
             BigDecimal skuPrice = productFeignClient.getSkuPrice(orderDetail.getSkuId());
             if (skuPrice.compareTo(orderDetail.getOrderPrice())!=0){
@@ -210,5 +210,62 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void update(OrderInfo orderInfo) {
         orderMapper.updateById(orderInfo);
+    }
+
+    @Override
+    @Transactional
+    public Long saveSeckillOrderInfo(OrderInfo orderInfo) {
+        orderInfo.sumTotalAmount();
+        orderInfo.setOrderStatus(OrderStatus.UNPAID.name());
+        String outTradeNo = "GMALL"+ System.currentTimeMillis() + ""+ new Random().nextInt(1000);
+        //设置订单交易编号
+        orderInfo.setOutTradeNo(outTradeNo);
+        orderInfo.setCreateTime(new Date());
+        // 定义为1天
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, 1);
+        orderInfo.setExpireTime(calendar.getTime());
+        orderInfo.setProcessStatus(ProcessStatus.UNPAID.name());
+        List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
+        //验库存
+        for (OrderDetail orderDetail : orderDetailList) {
+            Integer skuNum = orderDetail.getSkuNum();
+            Long skuId = orderDetail.getSkuId();
+            String result = HttpClientUtil.doGet(WARE_URL + "/hasStock?skuId=" + skuId + "&num=" + skuNum);
+            if ("0".equals(result)){
+                String skuName = orderDetail.getSkuName();
+                throw new RuntimeException(skuName+"  库存不足！");
+            }
+        }
+        //订单存入数据库
+        orderMapper.insert(orderInfo);
+        //保存订单项
+        orderDetailList.stream().forEach(orderDetail -> orderDetail.setOrderId(orderInfo.getId()));
+        orderMapper.saveOrderDetailList(orderDetailList);
+        //删除流水号
+        String tradeNoKey="user:"+ orderInfo.getUserId() + ":tradeCode";
+        redisTemplate.delete(tradeNoKey);
+        //将库存信息发送到消息队列，库存系统锁定库存
+        WareOrderTask wareOrderTask = new WareOrderTask();
+        List<WareOrderTaskDetail> orderTaskDetails = new ArrayList<>();
+        for (OrderDetail orderDetail : orderDetailList) {
+            WareOrderTaskDetail wareOrderTaskDetail = new WareOrderTaskDetail();
+            wareOrderTaskDetail.setSkuId(orderDetail.getSkuId()+"");
+            wareOrderTaskDetail.setSkuNum(orderDetail.getSkuNum());
+            wareOrderTaskDetail.setSkuName(orderDetail.getSkuName());
+            orderTaskDetails.add(wareOrderTaskDetail);
+        }
+
+        wareOrderTask.setDetails(orderTaskDetails);
+        wareOrderTask.setOrderId(orderInfo.getId()+"");
+        wareOrderTask.setConsignee(orderInfo.getConsignee());
+        wareOrderTask.setConsigneeTel(orderInfo.getConsigneeTel());
+        wareOrderTask.setCreateTime(new Date());
+        wareOrderTask.setPaymentWay(PaymentWay.ONLINE.getComment());
+        wareOrderTask.setDeliveryAddress(orderInfo.getDeliveryAddress());
+        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_WARE_STOCK,MqConst.ROUTING_WARE_STOCK, JSONObject.toJSONString(wareOrderTask));
+        //发送订单Id到延迟队列，超时删除订单
+        rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_ORDER_CANCEL, orderInfo.getId(), 7200L);
+        return orderInfo.getId();
     }
 }

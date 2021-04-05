@@ -45,7 +45,7 @@ public class ActivityConsumer {
                     //使用redis的list类型存放商品库存，有多少库存就push多少次
                     redisTemplate.boundListOps(RedisConst.SECKILL_STOCK_PREFIX + seckillGood.getSkuId()).leftPush(seckillGood.getSkuId().toString());
                 }
-                redisTemplate.convertAndSend("seckillpush",seckillGood.getSkuId()+"1");
+                redisTemplate.convertAndSend("seckillpush",seckillGood.getSkuId()+":1");
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         }catch (Exception e){

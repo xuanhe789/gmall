@@ -10,6 +10,8 @@ import com.xuanhe.gmall.model.product.SkuImage;
 import com.xuanhe.gmall.model.product.SkuInfo;
 import com.xuanhe.gmall.model.product.SpuSaleAttr;
 import com.xuanhe.gmall.product.feign.ProductFeignClient;
+import com.xuanhe.gmall.rabbit.constant.MqConst;
+import com.xuanhe.gmall.rabbit.service.RabbitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,8 @@ import java.util.function.Supplier;
 
 @Service
 public class ItemServiceImpl implements ItemService {
+    @Autowired
+    RabbitService rabbitService;
     @Autowired
     ProductFeignClient productFeignClient;
     @Autowired
@@ -100,5 +104,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<JSONObject> getCategoryList() {
         return productFeignClient.getCategoryList();
+    }
+
+    public void incrHotScore(Long skuId){
+        rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_INCREHOT,MqConst.ROUTING_GOODS_INCREHOT,skuId);
     }
 }

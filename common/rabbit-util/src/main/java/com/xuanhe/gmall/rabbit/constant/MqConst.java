@@ -79,6 +79,10 @@ public class MqConst {
     //队列
     public static final String QUEUE_TASK_18  = "queue.task.18";
 
+    public static final String QUEUE_GOODS_INCREHOT="queue.goods.updateHot";
+    public static final String EXCHANGE_GOODS_INCREHOT="exchange.goods.updateHot";
+    public static final String ROUTING_GOODS_INCREHOT="routing.goods.updateHot";
+
 
 
 }

@@ -5,10 +5,17 @@ import com.xuanhe.gmall.activity.config.CacheHelper;
 import com.xuanhe.gmall.activity.service.SeckillService;
 import com.xuanhe.gmall.common.constant.RedisConst;
 import com.xuanhe.gmall.common.result.Result;
+import com.xuanhe.gmall.common.result.ResultCodeEnum;
+import com.xuanhe.gmall.common.util.AuthContextHolder;
 import com.xuanhe.gmall.common.util.DateUtil;
 import com.xuanhe.gmall.common.util.MD5;
+import com.xuanhe.gmall.model.activity.OrderRecode;
 import com.xuanhe.gmall.model.activity.SeckillGoods;
+import com.xuanhe.gmall.model.order.OrderDetail;
+import com.xuanhe.gmall.model.order.OrderInfo;
 import com.xuanhe.gmall.model.user.UserInfo;
+import com.xuanhe.gmall.model.user.UserRecode;
+import com.xuanhe.gmall.order.feign.OrderFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
@@ -27,6 +34,8 @@ public class SeckillGoodsController {
     SeckillService seckillService;
     @Autowired
     RedisTemplate redisTemplate;
+    @Autowired
+    OrderFeignClient orderFeignClient;
 
     /*
     * 返回秒杀所有列表
@@ -47,10 +56,14 @@ public class SeckillGoodsController {
     /*
     * 生成下单码
     * */
-    @GetMapping("auth/getSeckillSkuIdStr/{skuId}")
+    @GetMapping("/auth/getSeckillSkuIdStr/{skuId}")
     public Result getSeckillSkuIdStr(@PathVariable("skuId") Long skuId, HttpServletRequest request) {
         String userInfoStr = request.getHeader("userInfo");
         UserInfo userInfo = JSONObject.parseObject(userInfoStr, UserInfo.class);
+        Long isExit= (Long) redisTemplate.opsForValue().get(RedisConst.SECKILL_USER+userInfo.getId());
+        if (null!=isExit&&isExit.equals(skuId)){
+            return Result.build(null, ResultCodeEnum.SECKILL_FAIL).message("您已下过单");
+        }
         SeckillGoods seckillGoods= (SeckillGoods) redisTemplate.boundHashOps(RedisConst.SECKILL_GOODS).get(skuId+"");
         if (seckillGoods!=null){
             Date currentTime = new Date();
@@ -72,7 +85,7 @@ public class SeckillGoodsController {
     * */
     @PostMapping("/auth/seckillOrder/{skuId}")
     public Result saveOrder(@PathVariable("skuId") Long skuId,HttpServletRequest request){
-        String  skuIdStr= (String) request.getAttribute("skuIdStr");
+        String  skuIdStr= request.getParameter("skuIdStr");
         String userInfoJson = request.getHeader("userInfo");
         UserInfo userInfo = JSONObject.parseObject(userInfoJson, UserInfo.class);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdHHmm");
@@ -86,5 +99,51 @@ public class SeckillGoodsController {
         }
         seckillService.saveOrder(skuId,userInfo.getId());
         return Result.ok();
+    }
+
+    /*
+    * 轮询检查抢购的状态
+    * */
+    @GetMapping(value = "auth/checkOrder/{skuId}")
+    public Result checkOrder(@PathVariable("skuId") Long skuId, HttpServletRequest request) {
+        String userInfoJson = request.getHeader("userInfo");
+        UserInfo userInfo = JSONObject.parseObject(userInfoJson, UserInfo.class);
+        return seckillService.checkOrder(userInfo.getId(),skuId);
+    }
+    /*
+    * 获取商品详情
+    * */
+    @GetMapping("/getOrderDetaliList/{skuId}")
+    List<OrderDetail> getOrderDetaliList(@PathVariable("skuId") String skuId,HttpServletRequest request){
+        String userInfoJson = request.getHeader("userInfo");
+        UserInfo userInfo = JSONObject.parseObject(userInfoJson, UserInfo.class);
+        List<OrderDetail> orderDetailList=seckillService.getOrderDetaliList(skuId,userInfo.getId());
+        return orderDetailList;
+    }
+
+    /*
+    * 提交秒杀订单
+    * */
+    @PostMapping("/auth/submitOrder/{tradeNo}")
+    public Result submitOrder(@PathVariable("tradeNo") String tradeNo, @RequestBody OrderInfo orderInfo,HttpServletRequest request){
+        String userInfoJson = request.getHeader("userInfo");
+        UserInfo userInfo = JSONObject.parseObject(userInfoJson, UserInfo.class);
+        //判断用户是否秒杀成功
+        Long skuId = orderInfo.getOrderDetailList().get(0).getSkuId();
+        OrderRecode orderRecode= (OrderRecode) redisTemplate.boundHashOps(RedisConst.SECKILL_ORDERS+ skuId).get(userInfo.getId().toString());
+        if (orderRecode==null){
+            return Result.fail().message("非法请求");
+        }
+        orderInfo.setUserId(userInfo.getId());
+        Result<String> result = orderFeignClient.submitSeckillOrder(orderInfo, tradeNo);
+        if (result.getCode()!=200){
+            return result;
+        }
+        String orderId = result.getData();
+        //删除缓存中秒杀成功的数据
+        seckillService.deleteOrderRecode(userInfo.getId()+"",skuId);
+        //增加到下单成功列表
+        seckillService.createOrderSucess(userInfo.getId().toString(),skuId,orderId);
+        return Result.ok(orderId);
     }
 }

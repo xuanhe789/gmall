@@ -3,6 +3,7 @@ package com.xuanhe.gmall.activity.feign;
 import com.xuanhe.gmall.activity.feign.impl.ActivityFeignClientImpl;
 import com.xuanhe.gmall.common.result.Result;
 import com.xuanhe.gmall.model.activity.SeckillGoods;
+import com.xuanhe.gmall.model.order.OrderDetail;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,4 +22,7 @@ public interface ActivityFeignClient {
      * */
     @GetMapping("/getSeckillGoods/{skuId}")
     Result<SeckillGoods> getSeckillGoodById(@PathVariable("skuId") Long skuId);
+
+    @GetMapping("/getOrderDetaliList/{skuId}")
+    List<OrderDetail> getOrderDetaliList(@PathVariable("skuId") String skuId);
 }

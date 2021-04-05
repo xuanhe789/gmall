@@ -183,6 +183,7 @@ public class GwareServiceImpl implements GwareService {
 //        session.commit();
     }
 
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<WareOrderTask> checkOrderSplit(WareOrderTask wareOrderTask) {
         List<WareOrderTaskDetail> details = wareOrderTask.getDetails();

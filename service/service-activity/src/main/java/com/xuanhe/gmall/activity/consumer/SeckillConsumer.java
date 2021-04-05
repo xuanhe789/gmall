@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class SeckillConsumer {
@@ -29,10 +31,12 @@ public class SeckillConsumer {
                 orderRecode.setUserId(userRecode.getUserId());
                 SeckillGoods seckillGoods = (SeckillGoods) redisTemplate.boundHashOps(RedisConst.SECKILL_GOODS).get(userRecode.getSkuId() + "");
                 orderRecode.setSeckillGoods(seckillGoods);
-                redisTemplate.boundHashOps(RedisConst.SECKILL_ORDERS).put(userRecode.getUserId(), orderRecode);
+                redisTemplate.boundHashOps(RedisConst.SECKILL_ORDERS+seckillGoods.getSkuId()).put(userRecode.getUserId(), orderRecode);
+                //将用户秒杀成功的信息存入redis，后续用来判断用户是否重复抢单
+                redisTemplate.opsForValue().setIfAbsent(RedisConst.SECKILL_USER+userRecode.getUserId(),userRecode.getSkuId(),RedisConst.SECKILL__TIMEOUT, TimeUnit.SECONDS);
             } else {
                 //库存为空，通知抢购服务更新状态
-                redisTemplate.convertAndSend("seckillpush", userRecode.getSkuId() + ":0 q");
+                redisTemplate.convertAndSend("seckillpush", userRecode.getSkuId() + ":0");
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         }catch (Exception e){

@@ -32,7 +32,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void addToCart(Long skuId, String userId, Integer skuNum,Boolean isTempId) {
         String cartKey = getCartKey(userId);
-        CartInfo cartInfoExist=new CartInfo();
+        CartInfo cartInfoExist=null;
         if (!isTempId){
             cartInfoExist=cartMapper.exist(skuId,userId);
         }
