@@ -36,4 +36,12 @@ public class PaymentController {
     public String success() {
         return "payment/success";
     }
+
+    /*
+    * 退款成功页
+    * */
+    @GetMapping("refundSuccess.html")
+    public String refundSuccess(){
+        return "payment/refundSuccess";
+    }
 }

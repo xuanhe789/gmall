@@ -14,5 +14,10 @@ public class PassportController {
         return "login";
     }
 
+    @GetMapping("register.html")
+    public String register(){
+        return "register";
+    }
+
 
 }

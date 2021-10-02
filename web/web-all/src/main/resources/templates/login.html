@@ -25,11 +25,7 @@
 			<div class="py-container login">
 				<div class="loginform">
 					<ul class="sui-nav nav-tabs tab-wraped">
-						<li id="tabOtherLogin" onclick="switchOtherLogin()">
-							<a href="javascript:void(0)" data-toggle="tab" >
-								<h3>扫描登录</h3>
-							</a>
-						</li>
+
 						<li id="tabSuiForm" class="active" onclick="switchSuiForm()">
 							<a href="javascript:void(0)" data-toggle="tab" >
 								<h3>账户登录</h3>
@@ -37,10 +33,6 @@
 						</li>
 					</ul>
 					<div class="tab-content tab-wraped">
-						<div id="index" class="tab-pane ">
-							<p>二维码登录，暂为官网二维码</p>
-							<img src="./img/wx_cz.jpg" />
-						</div>
 						<div id="profile" class="tab-pane active">
 							<form class="sui-form">
 								<div class="input-prepend"><span class="add-on loginname"></span>
@@ -48,13 +40,6 @@
 								</div>
 								<div class="input-prepend"><span class="add-on loginpwd"></span>
 									<input id="inputPassword" type="password" v-model="user.passwd" placeholder="请输入密码" class="span2 input-xfat">
-								</div>
-								<div class="setting">
-									<label class="checkbox inline">
-										<input name="m1" type="checkbox" value="2" checked="">
-										自动登录
-									</label>
-									<span class="forget">忘记密码？</span>
 								</div>
 								<div class="logined">
 									<a class="sui-btn btn-block btn-xlarge btn-danger" href="javascript:" @click="submitLogin()">登&nbsp;&nbsp;录</a>

@@ -12,7 +12,7 @@ spring:
         prefetch: 1 # 消费者每次从队列获取的消息数量。此属性当不设置时为：轮询分发，设置为1为：公平分发
     virtual-host: /xuanhe
   redis:
-    host: 47.115.74.81
+    host: 192.168.200.128
     port: 6379
   cloud:
     nacos:

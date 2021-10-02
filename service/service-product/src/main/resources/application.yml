@@ -27,7 +27,7 @@ spring:
   application:
     name: product-service
   redis:
-    host: 47.115.74.81
+    host: 192.168.200.128
     port: 6379
 feign:
   client:

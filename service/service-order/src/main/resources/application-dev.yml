@@ -39,7 +39,7 @@ spring:
         prefetch: 1 # 消费者每次从队列获取的消息数量。此属性当不设置时为：轮询分发，设置为1为：公平分发
     virtual-host: /xuanhe
   redis:
-    host: 47.115.74.81
+    host: 192.168.200.128
     port: 6379
     database: 0
     timeout: 1800000
@@ -53,9 +53,9 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://47.115.74.81:3307/gmall_order?characterEncoding=utf-8&useSSL=false
+    url: jdbc:mysql://192.168.200.128:3306/gmall_order?characterEncoding=utf-8&useSSL=false
     username: root
-    password: 123456
+    password: root
     hikari:
       connection-test-query: SELECT 1
       connection-timeout: 60000

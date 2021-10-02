@@ -2,6 +2,7 @@ package com.xuanhe.gmall.order.service;
 
 import com.xuanhe.gmall.model.order.OrderInfo;
 
+import java.util.List;
 import java.util.Map;
 
 public interface OrderService {
@@ -24,4 +25,6 @@ public interface OrderService {
     void update(OrderInfo orderInfo);
 
     Long saveSeckillOrderInfo(OrderInfo orderInfo);
+
+    Map<String,Object> getOrderList(String userId,Integer page,Integer limit);
 }

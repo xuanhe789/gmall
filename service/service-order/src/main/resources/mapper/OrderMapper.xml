@@ -14,4 +14,7 @@
     <select id="getOrderDetailList" resultType="com.xuanhe.gmall.model.order.OrderDetail">
         select * from order_detail where order_id=#{orderId}
     </select>
+    <select id="getOrderListPages" resultType="com.xuanhe.gmall.model.order.OrderInfo">
+        select * from order_info where user_id=#{userId} limit #{page},#{limit}
+    </select>
 </mapper>

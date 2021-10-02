@@ -225,6 +225,7 @@ public class OrderServiceImpl implements OrderService {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 1);
         orderInfo.setExpireTime(calendar.getTime());
+        orderInfo.setPaymentWay(PaymentWay.ONLINE.getComment());
         orderInfo.setProcessStatus(ProcessStatus.UNPAID.name());
         List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
         //验库存
@@ -267,5 +268,27 @@ public class OrderServiceImpl implements OrderService {
         //发送订单Id到延迟队列，超时删除订单
         rabbitService.sendDelayMessage(MqConst.ROUTING_ORDER_CANCEL,MqConst.ROUTING_ORDER_CANCEL, orderInfo.getId(), 7200L);
         return orderInfo.getId();
+    }
+
+    @Override
+    public Map<String,Object> getOrderList(String userId,Integer page,Integer limit) {
+        Map<String,Object> result=new HashMap<>();
+        List<OrderInfo> orderInfoList=new ArrayList<>();
+        QueryWrapper queryWrapper=new QueryWrapper();
+        queryWrapper.eq("user_id",userId);
+        orderInfoList = orderMapper.getOrderListPages(userId,page-1,limit);
+        Integer count = orderMapper.selectCount(queryWrapper);
+        Integer pages=count%limit==0?count/limit:count/limit+1;
+        if (orderInfoList==null||orderInfoList.size()==0){
+            return result;
+        }
+        for (OrderInfo orderInfo : orderInfoList) {
+            List<OrderDetail> orderDetailList = orderMapper.getOrderDetailList(orderInfo.getId());
+            orderInfo.setOrderDetailList(orderDetailList);
+            orderInfo.setOrderStatus(OrderStatus.getStatusNameByStatus(orderInfo.getOrderStatus()));
+        }
+        result.put("pages",pages);
+        result.put("records",orderInfoList);
+        return result;
     }
 }

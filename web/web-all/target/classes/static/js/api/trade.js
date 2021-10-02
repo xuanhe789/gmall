@@ -33,5 +33,11 @@ var trade = {
       url: this.api_name + `/auth/${page}/${limit}`,
       method: 'get'
     })
+  },
+  orderRefund(orderId){
+      return request({
+        url: '/api/payment'+ '/refund/'+orderId,
+        method: 'post'
+    })
   }
 }

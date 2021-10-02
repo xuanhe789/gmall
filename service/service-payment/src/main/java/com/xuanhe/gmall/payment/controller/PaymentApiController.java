@@ -70,7 +70,7 @@ public class PaymentApiController {
     /*
     * 退款
     * */
-    @RequestMapping("/refund/{orderId}")
+    @PostMapping("/refund/{orderId}")
     @ResponseBody
     public Result refund(@PathVariable(value = "orderId")Long orderId) throws AlipayApiException {
         Boolean flag = alipayService.closePay(orderId);

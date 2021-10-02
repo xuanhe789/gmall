@@ -17,7 +17,7 @@ public class UrlParamUtils {
             stringBuilder.append("keyword="+keyword);
         }
         if (trademark!=null){
-            stringBuilder.append("&trademark="+keyword);
+            stringBuilder.append("&trademark="+trademark);
         }
         if (!ArrayUtils.isEmpty(props)){
             for (String prop : props) {

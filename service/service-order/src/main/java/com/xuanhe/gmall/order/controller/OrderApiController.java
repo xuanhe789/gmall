@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 @RestController
 @RequestMapping("/api/order")
@@ -105,6 +106,13 @@ public class OrderApiController {
         // 验证通过，保存订单！
         Long orderId = orderService.saveSeckillOrderInfo(orderInfo);
         return Result.ok(orderId+"");
+    }
+
+    @GetMapping("/auth/{page}/{limit}")
+    public Result<Map<String,Object>> getOrderList(@PathVariable("page") Integer page,@PathVariable("limit") Integer limit,  HttpServletRequest request){
+        String userId = getTokenUserId(request);
+        Map<String,Object> result=orderService.getOrderList(userId,page,limit);
+        return Result.ok(result);
     }
 
 

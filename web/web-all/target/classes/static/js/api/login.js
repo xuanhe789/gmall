@@ -10,6 +10,7 @@ var login = {
     })
   },
 
+
   logout() {
     return request({
       url: this.api_name + '/logout',
